@@ -1,0 +1,3 @@
+moduleName=neo4j-module
+moduleVersion=1.0
+extensionClasses=agrovoc.util.persistence.NodeExtension, agrovoc.util.persistence.GraphDatabaseServiceExtension

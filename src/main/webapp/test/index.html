@@ -1,0 +1,65 @@
+<html>
+<head>
+    <title>Test</title>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+</head>
+<body>
+<h1>Test</h1>
+
+<form action="../term" method="get">
+    <label>
+        Query:
+        <input id="q" name="q" type="text" autocomplete="off">
+    </label>
+    <label>
+        Language:
+        <select>
+            <option value="EN">English</option>
+            <option value="FR">French</option>
+        </select>
+
+    </label>
+
+    <div id="result"></div>
+</form>
+<script type="text/javascript">
+    $(function () {
+        var minlength = 1;
+        var input = $('#q');
+        var languageInput = $('#language');
+        var url = $('form').attr('action');
+        input.keyup(function () {
+            var that = this;
+            var value = $(this).val();
+            var language = languageInput.val();
+
+            if (value.length >= minlength) {
+                if (!input.hasClass('loading'))
+                    input.addClass('loading');
+                $.ajax({
+                    type: "GET",
+                    url: url,
+                    data: { q: value, language: language },
+                    dataType: "json"
+                }).done(function (data) {
+                            //we need to check if the value is the same
+                            if (value == $(that).val()) {
+                                $('#result').html('');
+                                $.each(data, function () {
+                                    var term = $('#result').append('<div class="term">' + this.label + '</div>');
+                                    $.each(this.links, function (rel, link) {
+                                        term.append('<div><a href="' + link + '">' + rel + '</a></div>');
+                                    });
+                                    term.append('<hr>');
+                                });
+                                input.removeClass('loading');
+                            }
+                        });
+            } else {
+                $('#result').html('');
+            }
+        });
+    })
+</script>
+</body>
+</html>
