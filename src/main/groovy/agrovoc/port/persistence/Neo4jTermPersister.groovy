@@ -66,23 +66,26 @@ class Neo4jTermPersister implements TermPersister {
     }
 
     private void updateDescriptionNodes(Node termNode, Term term) {
-        // TODO: Make sure languages can be removed
+        removeDescriptions(termNode)
         term.labelByLanguage.each { language, label ->
-            Node termDescriptionNode = findOrCreateTermDescriptionNode(termNode, language)
-            termDescriptionNode['label'] = label
-            indexTermDescription(termDescriptionNode, term, language)
+            Node descriptionNode = createTermDescriptionNode(termNode, term, language)
+            indexTermDescription(descriptionNode, term, language)
         }
     }
 
-    private Node findOrCreateTermDescriptionNode(Node termNode, String language) {
-        def termDescriptionNode = findTermDescriptionNode(termNode, language) ?:
-            createTermDescriptionNode(termNode, language)
-        return termDescriptionNode
+    private void removeDescriptions(Node termNode) {
+        termNode.getRelationships(DESCRIBES, INCOMING).each { rel ->
+            def descriptionNode = rel.startNode
+            rel.delete()
+            nodeFinder.accessIndex().remove(descriptionNode)
+            descriptionNode.delete()
+        }
     }
 
-    private Node createTermDescriptionNode(Node termNode, String language) {
+    private Node createTermDescriptionNode(Node termNode, Term term, String language) {
         def termDescriptionNode = graphDb.createNode()
         termDescriptionNode['language'] = language
+        termDescriptionNode['label'] = term.labelByLanguage[language]
         termDescriptionNode.createRelationshipTo(termNode, DESCRIBES)
         return termDescriptionNode
     }

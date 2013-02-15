@@ -54,7 +54,7 @@ class NodeFinder {
         terms.get('code', code).single
     }
 
-    private Index<Node> accessIndex() {
+    Index<Node> accessIndex() {
         graphDb.index().forNodes('terms')
     }
 }
