@@ -126,6 +126,24 @@ class Neo4jTermRepository_IntegrationTest extends Specification {
         result.first().end.code == term2.code
     }
 
+    def 'Given pre-existing link, when updating links, pre-existing ones are removed'() {
+        def term1 = createTerm('Term 1', 1)
+        def term2 = createTerm('Term 2', 2)
+        persister.persistTerm(term1)
+        persister.persistTerm(term2)
+        persister.persistLinks(new TermLinks(startTermCode: term1.code).add(term2.code, 20))
+        assert repository.getLinksByCode(term1.code, 'EN').first().type == '20'
+
+        when:
+        persister.persistLinks(new TermLinks(startTermCode: term1.code).add(term2.code, 60))
+
+
+        then:
+        def result = repository.getLinksByCode(term1.code, 'EN')
+        result.size() == 1
+        result.first().type == '60'
+    }
+
     def 'Given no description in language, when getting links by code, English is used'() {
         def term1 = createTerm('Term 1', 1, 'EN')
         def term2 = createTerm('Term 2', 2, 'EN')
