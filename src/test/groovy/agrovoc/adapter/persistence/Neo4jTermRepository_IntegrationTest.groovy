@@ -1,6 +1,7 @@
 package agrovoc.adapter.persistence
 
 import agrovoc.dto.Term
+import agrovoc.dto.TermLinks
 import agrovoc.exception.NotFoundException
 import agrovoc.neo4j.Neo4j
 import agrovoc.port.persistence.Neo4jTermPersister
@@ -114,7 +115,7 @@ class Neo4jTermRepository_IntegrationTest extends Specification {
         def term2 = createTerm('Term 2', 2)
         persister.persistTerm(term1)
         persister.persistTerm(term2)
-        persister.persistLink([start: term1.code, end: term2.code, type: 20])
+        persister.persistLinks(new TermLinks(startTermCode: term1.code).add(term2.code, 20))
 
         when:
         def result = repository.getLinksByCode(term1.code, 'EN')
@@ -130,7 +131,7 @@ class Neo4jTermRepository_IntegrationTest extends Specification {
         def term2 = createTerm('Term 2', 2, 'EN')
         persister.persistTerm(term1)
         persister.persistTerm(term2)
-        persister.persistLink([start: term1.code, end: term2.code, type: 20])
+        persister.persistLinks(new TermLinks(startTermCode: term1.code).add(term2.code, 20))
 
         when:
         def result = repository.getLinksByCode(term1.code, 'FR')
@@ -146,7 +147,7 @@ class Neo4jTermRepository_IntegrationTest extends Specification {
         def term2 = createTerm('Term 2', 2, 'FR')
         persister.persistTerm(term1)
         persister.persistTerm(term2)
-        persister.persistLink([start: term1.code, end: term2.code, type: 20])
+        persister.persistLinks(new TermLinks(startTermCode: term1.code).add(term2.code, 20))
 
         when:
         def result = repository.getLinksByCode(term1.code, 'EN')

@@ -1,6 +1,7 @@
 package agrovoc.port.persistence
 
 import agrovoc.dto.Term
+import agrovoc.dto.TermLinks
 
 /**
  * @author Daniel Wiell
@@ -8,7 +9,7 @@ import agrovoc.dto.Term
 interface TermPersister {
     void persistTerm(Term term)
 
-    void persistLink(Map<String, Object> link)
+    void persistLinks(TermLinks links)
 
     Date getLastChanged()
 

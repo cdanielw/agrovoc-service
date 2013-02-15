@@ -1,8 +1,8 @@
 package agrovoc.adapter.agrovoc
 
 import agrovoc.dto.Term
+import agrovoc.dto.TermLinks
 import agrovoc.port.agrovoc.AgrovocRepository
-import agrovoc.util.persistence.RowResult
 import groovy.sql.GroovyResultSet
 import groovy.sql.Sql
 
@@ -36,26 +36,33 @@ class DataSourceAgrovocRepository implements AgrovocRepository {
         if (term) callback.call(term)
     }
 
-    private Term createTerm(GroovyResultSet rs) {
-        new Term(
-                code: rs.getLong('termcode'),
-                status: rs.getInt('statusid'),
-                scope: rs.getString('scopeid'),
-                lastChanged: rs.getDate('lastupdate'))
-    }
-
     void eachLinkChangedSince(Date date, Closure callback) {
+        println 'Each since changed'
         if (!date) date = new Date(0)
+        TermLinks termLinks = null
         sql.eachRow('''
-                SELECT termcode1 start, termcode2 end, newlinktypeid type
+                SELECT termcode1, termcode2 end, newlinktypeid
                 FROM termlink l
                 JOIN agrovocterm t ON t.termcode = l.termcode1
                 WHERE lastupdate > ? AND termspell != ''
                 GROUP BY termcode1, termcode2, newlinktypeid
                 ORDER BY termcode1
                 ''', [date]) { GroovyResultSet rs ->
-            def result = new RowResult(rs)
-            callback.call(result)
+            def startTermCode = rs.getLong('termcode1')
+            if (termLinks?.startTermCode != startTermCode) {
+                if (termLinks) callback.call(termLinks)
+                termLinks = new TermLinks(startTermCode: startTermCode)
+            }
+            termLinks.add(rs.getLong('termcode2'), rs.getInt('newlinktypeid'))
         }
+        if (termLinks) callback.call(termLinks)
+    }
+
+    private Term createTerm(GroovyResultSet rs) {
+        new Term(
+                code: rs.getLong('termcode'),
+                status: rs.getInt('statusid'),
+                scope: rs.getString('scopeid'),
+                lastChanged: rs.getDate('lastupdate'))
     }
 }

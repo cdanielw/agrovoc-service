@@ -1,6 +1,7 @@
 package agrovoc.fake
 
 import agrovoc.dto.Term
+import agrovoc.dto.TermLinks
 import groovy.sql.Sql
 import org.h2.jdbcx.JdbcDataSource
 import org.slf4j.Logger
@@ -50,7 +51,6 @@ class AgrovocDatabase {
     }
 
     void insertTerm(Term term) {
-        def sql = new Sql(dataSource)
         term.labelByLanguage.each { language, label ->
             sql.executeInsert('INSERT INTO agrovocterm(termcode, termspell, statusid, languagecode, scopeid, lastupdate) VALUES(?, ?, ?, ?, ?, ?)', [
                     term.code,
@@ -59,14 +59,17 @@ class AgrovocDatabase {
                     language ?: 'EN',
                     term.scope ?: '',
                     term.lastChanged ?: new Date()])
-
         }
     }
 
-    void insertLink(link) {
-        new Sql(dataSource).executeInsert('INSERT INTO termlink(termcode1, termcode2, newlinktypeid) VALUES(?, ?, ?)', [
-                link.start,
-                link.end,
-                link.type])
+    void insertLink(TermLinks links) {
+        links.each {endTermCode, linkType ->
+            sql.executeInsert('INSERT INTO termlink(termcode1, termcode2, newlinktypeid) VALUES(?, ?, ?)', [
+                    links.startTermCode, endTermCode, linkType])
+        }
+    }
+
+    private Sql getSql() {
+        new Sql(dataSource)
     }
 }

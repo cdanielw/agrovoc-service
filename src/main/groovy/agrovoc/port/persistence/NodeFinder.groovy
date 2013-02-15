@@ -20,13 +20,6 @@ class NodeFinder {
         this.graphDb = graphDb
     }
 
-
-    Node findByCode(long code) {
-        def terms = accessIndex()
-        terms.get('code', code).single
-    }
-
-
     Node findTerm(Node termDescription) {
         termDescription.getSingleRelationship(DESCRIBES, OUTGOING).endNode
     }

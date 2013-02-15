@@ -1,9 +1,11 @@
 package agrovoc.port.persistence
 
 import agrovoc.dto.Term
+import agrovoc.dto.TermLinks
 import org.neo4j.graphdb.*
 
 import static org.neo4j.graphdb.Direction.INCOMING
+import static org.neo4j.graphdb.Direction.OUTGOING
 
 /**
  * @author Daniel Wiell
@@ -28,13 +30,15 @@ class Neo4jTermPersister implements TermPersister {
         }
     }
 
-    void persistLink(Map<String, Object> link) {
-        validateLink(link)
+    void persistLinks(TermLinks links) {
+        validateLinks(links)
         graphDb.transact {
-            def startNode = nodeFinder.findByCode(link.start as Long)
-            def endNode = nodeFinder.findByCode(link.end as Long)
-            // TODO: Need to remove existing links
-            startNode.createRelationshipTo(endNode, DynamicRelationshipType.withName(link.type as String))
+            def startNode = nodeFinder.getTermByCode(links.startTermCode)
+            startNode.getRelationships(OUTGOING)*.delete()
+            links.each { long endTermCode, int linkType ->
+                def endNode = nodeFinder.getTermByCode(endTermCode)
+                startNode.createRelationshipTo(endNode, DynamicRelationshipType.withName(linkType as String))
+            }
         }
     }
 
@@ -58,7 +62,7 @@ class Neo4jTermPersister implements TermPersister {
     }
 
     private Node findOrCreateTermNode(Term term) {
-        nodeFinder.findByCode(term.code) ?: graphDb.createNode()
+        nodeFinder.findTermByCode(term.code) ?: graphDb.createNode()
     }
 
     private void updateDescriptionNodes(Node termNode, Term term) {
@@ -133,9 +137,11 @@ class Neo4jTermPersister implements TermPersister {
         }
     }
 
-    private void validateLink(Map<String, Object> link) {
-        assert link.start
-        assert link.end
-        assert link.type
+    private void validateLinks(TermLinks links) {
+        assert links.startTermCode
+        links.each { endTermCode, type ->
+            assert endTermCode
+            assert type
+        }
     }
 }

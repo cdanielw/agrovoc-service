@@ -48,7 +48,6 @@ class Neo4jTermRepository implements TermRepository {
 
     List<Map<String, Object>> getLinksByCode(long code, String language) {
         def startNode = nodes.getTermByCode(code)
-        test(startNode)
         def startTerm = toTerm(startNode, nodes.getTermDescription(startNode, language))
         startNode.getRelationships(OUTGOING).findAll { relationship ->
             nodes.findTermDescription(relationship.endNode, language)

@@ -1,6 +1,7 @@
 package agrovoc.adapter.event
 
 import agrovoc.dto.Term
+import agrovoc.dto.TermLinks
 import agrovoc.port.event.TermEventPublisher
 import org.slf4j.LoggerFactory
 
@@ -10,13 +11,12 @@ import org.slf4j.LoggerFactory
 class EventLogger {
     void register(TermEventPublisher publisher) {
         def logger = LoggerFactory.getLogger(TermEventPublisher)
-        publisher.registerCreateListener {Term term ->
+        publisher.registerCreateListener { Term term ->
             logger.info("Created term $term")
         }
 
-        publisher.registerLinkListener {
-            logger.info("Linked ($it.type: $it.start to $it.end)")
+        publisher.registerLinkListener { TermLinks termLinks ->
+            logger.info("Linked $termLinks")
         }
     }
-
 }

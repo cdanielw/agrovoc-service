@@ -1,6 +1,7 @@
 package agrovoc.domain
 
 import agrovoc.dto.Term
+import agrovoc.dto.TermLinks
 import agrovoc.port.agrovoc.AgrovocRepository
 import agrovoc.port.cron.AgrovocTermPollingJob
 import agrovoc.port.event.TermEventPublisher
@@ -37,14 +38,6 @@ class TermService implements AgrovocTermPollingJob, TermEventPublisher, TermProv
         println "******** Polling for changes since $previousLastChange took ${(System.currentTimeMillis() - time) / 1000 / 60} minutes"
     }
 
-    void persistLinksChangedSince(Date previousLastChange) {
-        agrovocRepository.eachLinkChangedSince(previousLastChange) { link ->
-            termPersister.persistLink(link)
-            linkListeners.each { it.call(link) }
-        }
-
-    }
-
     private Date persistTermsChangedSince(Date previousLastChange) {
         Date lastChanged = null
         agrovocRepository.eachTermChangedSince(previousLastChange) { Term term ->
@@ -55,6 +48,15 @@ class TermService implements AgrovocTermPollingJob, TermEventPublisher, TermProv
         }
         return lastChanged
     }
+
+    private void persistLinksChangedSince(Date previousLastChange) {
+        agrovocRepository.eachLinkChangedSince(previousLastChange) { TermLinks links ->
+            println "Persisting links: $links"
+            termPersister.persistLinks(links)
+            linkListeners.each { it.call(links) }
+        }
+    }
+
 
     void registerCreateListener(Closure listener) {
         createListeners << listener

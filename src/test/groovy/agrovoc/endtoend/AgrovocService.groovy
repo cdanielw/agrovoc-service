@@ -1,6 +1,7 @@
 package agrovoc.endtoend
 
 import agrovoc.dto.Term
+import agrovoc.dto.TermLinks
 import agrovoc.fake.AgrovocDatabase
 import agrovoc.fake.WebServer
 import agrovoc.neo4j.Neo4j
@@ -44,12 +45,12 @@ class AgrovocService {
         return term
     }
 
-    List<Term> createTerms(List<Term> terms, List links = []) {
+    List<Term> createTerms(List<Term> terms, List<TermLinks> links = []) {
         insertAndWaitUntilCreated(terms, links)
         return terms
     }
 
-    private void insertAndWaitUntilCreated(List<Term> terms, List links) {
+    private void insertAndWaitUntilCreated(List<Term> terms, List<TermLinks> links) {
         def created = new BlockingVariable<Boolean>(2, TimeUnit.SECONDS)
         def linked = new BlockingVariable<Boolean>(2, TimeUnit.SECONDS)
         def createCount = new AtomicInteger()

@@ -1,6 +1,7 @@
 package agrovoc.endtoend
 
 import agrovoc.dto.Term
+import agrovoc.dto.TermLinks
 import groovyx.net.http.RESTClient
 import spock.lang.Specification
 
@@ -51,8 +52,8 @@ class Resource_FunctionalTest extends Specification {
                 new Term(code: 123, labelByLanguage: [EN: 'Term 1']),
                 new Term(code: 456, labelByLanguage: [EN: 'Term 2']),
                 new Term(code: 798, labelByLanguage: [EN: 'Term 2'])], [
-                [start: 123, end: 456, type: 1000],
-                [start: 123, end: 798, type: 2000]
+                new TermLinks(startTermCode: 123).add(456, 1000),
+                new TermLinks(startTermCode: 123).add(798, 2000)
         ])
         when:
         def result = client.get(path: "term/123/links").data
