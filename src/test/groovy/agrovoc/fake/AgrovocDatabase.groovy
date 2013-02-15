@@ -1,5 +1,6 @@
 package agrovoc.fake
 
+import agrovoc.dto.Term
 import groovy.sql.Sql
 import org.h2.jdbcx.JdbcDataSource
 import org.slf4j.Logger
@@ -48,14 +49,18 @@ class AgrovocDatabase {
         LOG.info("Reset database in ${System.currentTimeMillis() - time} millis.")
     }
 
-    void insertTerm(term) {
-        new Sql(dataSource).executeInsert('INSERT INTO agrovocterm(termcode, termspell, statusid, languagecode, scopeid, lastupdate) VALUES(?, ?, ?, ?, ?, ?)', [
-                term.code,
-                term.label,
-                term.status ?: 20,
-                term.language ?: 'EN',
-                term.scope ?: '',
-                term.lastChange ?: new Date()])
+    void insertTerm(Term term) {
+        def sql = new Sql(dataSource)
+        term.labelByLanguage.each { language, label ->
+            sql.executeInsert('INSERT INTO agrovocterm(termcode, termspell, statusid, languagecode, scopeid, lastupdate) VALUES(?, ?, ?, ?, ?, ?)', [
+                    term.code,
+                    label,
+                    term.status ?: 20,
+                    language ?: 'EN',
+                    term.scope ?: '',
+                    term.lastChanged ?: new Date()])
+
+        }
     }
 
     void insertLink(link) {

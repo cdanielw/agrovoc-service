@@ -1,12 +1,13 @@
 package agrovoc.endtoend
 
+import agrovoc.dto.Term
 import agrovoc.fake.AgrovocDatabase
 import agrovoc.fake.WebServer
 import agrovoc.neo4j.Neo4j
+import agrovoc.neo4j.TestNeo4jFactory
 import agrovoc.port.event.TermEventPublisher
 import agrovoc.setup.ConfigurationHolder
 import agrovoc.setup.SystemConfiguration
-import agrovoc.neo4j.TestNeo4jFactory
 import org.eclipse.jetty.server.Handler
 import org.eclipse.jetty.webapp.WebAppContext
 import spock.util.concurrent.BlockingVariable
@@ -38,17 +39,17 @@ class AgrovocService {
         neo4j.stop()
     }
 
-    def createTerm(term) {
+    Term createTerm(Term term) {
         insertAndWaitUntilCreated([term], [])
         return term
     }
 
-    def createTerms(List terms, List links = []) {
+    List<Term> createTerms(List<Term> terms, List links = []) {
         insertAndWaitUntilCreated(terms, links)
         return terms
     }
 
-    private void insertAndWaitUntilCreated(List terms, List links) {
+    private void insertAndWaitUntilCreated(List<Term> terms, List links) {
         def created = new BlockingVariable<Boolean>(2, TimeUnit.SECONDS)
         def linked = new BlockingVariable<Boolean>(2, TimeUnit.SECONDS)
         def createCount = new AtomicInteger()

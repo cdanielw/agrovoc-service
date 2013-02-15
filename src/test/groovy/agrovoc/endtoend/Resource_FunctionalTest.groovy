@@ -1,6 +1,9 @@
 package agrovoc.endtoend
+
+import agrovoc.dto.Term
 import groovyx.net.http.RESTClient
 import spock.lang.Specification
+
 /**
  * @author Daniel Wiell
  */
@@ -19,7 +22,7 @@ class Resource_FunctionalTest extends Specification {
     def 'When getting term by code, JSON representation is returned'() {
         def code = 123
         def expectedLabel = 'Expected label'
-        service.createTerm(code: code, label: expectedLabel)
+        service.createTerm(new Term(code: code, labelByLanguage: [EN: expectedLabel]))
 
         when:
         def result = client.get(path: "term/$code").data
@@ -31,8 +34,8 @@ class Resource_FunctionalTest extends Specification {
         def query = 'lab exp'
         def expectedLabel = 'Label expected'
         service.createTerms([
-                [code: 123, label: 'Another label'],
-                [code: 456, label: expectedLabel]
+                new Term(code: 123, labelByLanguage: [EN: 'Another label']),
+                new Term(code: 456, labelByLanguage: [EN: expectedLabel])
         ])
 
         when:
@@ -45,9 +48,9 @@ class Resource_FunctionalTest extends Specification {
 
     def 'When finding links, JSON representation is returned'() {
         service.createTerms([
-                [code: 123, label: 'Term 1'],
-                [code: 456, label: 'Term 2'],
-                [code: 798, label: 'Term 2']], [
+                new Term(code: 123, labelByLanguage: [EN: 'Term 1']),
+                new Term(code: 456, labelByLanguage: [EN: 'Term 2']),
+                new Term(code: 798, labelByLanguage: [EN: 'Term 2'])], [
                 [start: 123, end: 456, type: 1000],
                 [start: 123, end: 798, type: 2000]
         ])

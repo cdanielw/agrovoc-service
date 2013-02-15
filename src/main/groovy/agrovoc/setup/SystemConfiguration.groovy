@@ -11,6 +11,8 @@ import agrovoc.domain.TermService
 import agrovoc.port.agrovoc.AgrovocRepository
 import agrovoc.port.cron.AgrovocTermPollingJob
 import agrovoc.port.event.TermEventPublisher
+import agrovoc.port.persistence.Neo4jTermPersister
+import agrovoc.port.persistence.TermPersister
 import agrovoc.port.persistence.TermRepository
 import agrovoc.port.resource.TermProvider
 import agrovoc.util.config.Resources
@@ -32,9 +34,10 @@ class SystemConfiguration implements Configuration {
         services[DataSource] = lookupAgrovocDataSource()
         services[AgrovocRepository] = new DataSourceAgrovocRepository(services[DataSource])
         services[GraphDatabaseService] = setupGraphDatabaseService()
+        services[TermPersister] = new Neo4jTermPersister(services[GraphDatabaseService])
         services[TermRepository] = new Neo4jTermRepository(services[GraphDatabaseService])
         services[[TermEventPublisher, TermProvider, AgrovocTermPollingJob]] =
-            new TermService(services[TermRepository], services[AgrovocRepository])
+            new TermService(services[TermRepository], services[TermPersister], services[AgrovocRepository])
         services[TermProvider] = services[TermService]
         services[AgrovocTermCron] = setupAgrovocTermCron()
         services[EventLogger] = setupEventLogger()

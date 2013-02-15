@@ -1,8 +1,10 @@
 package agrovoc.domain
 
+import agrovoc.dto.Term
 import agrovoc.port.agrovoc.AgrovocRepository
 import agrovoc.port.cron.AgrovocTermPollingJob
 import agrovoc.port.event.TermEventPublisher
+import agrovoc.port.persistence.TermPersister
 import agrovoc.port.persistence.TermRepository
 import agrovoc.port.resource.TermProvider
 
@@ -13,41 +15,43 @@ import java.util.concurrent.CopyOnWriteArrayList
  */
 class TermService implements AgrovocTermPollingJob, TermEventPublisher, TermProvider {
     private final TermRepository termRepository
+    private final TermPersister termPersister
     private final AgrovocRepository agrovocRepository
 
     private final List<Closure> createListeners = new CopyOnWriteArrayList<>()
     private final List<Closure> linkListeners = new CopyOnWriteArrayList<>()
 
-    TermService(TermRepository termRepository, AgrovocRepository agrovocRepository) {
+    TermService(TermRepository termRepository, TermPersister termPersister, AgrovocRepository agrovocRepository) {
         this.termRepository = termRepository
+        this.termPersister = termPersister
         this.agrovocRepository = agrovocRepository
     }
 
     void pollForChanges() {
         def time = System.currentTimeMillis()
-        def previousLastChange = termRepository.lastChanged
+        def previousLastChange = termPersister.lastChanged
         def lastChanged = persistTermsChangedSince(previousLastChange)
         persistLinksChangedSince(previousLastChange)
         if (lastChanged && previousLastChange != lastChanged)
-            termRepository.lastChanged = lastChanged
+            termPersister.lastChanged = lastChanged
         println "******** Polling for changes since $previousLastChange took ${(System.currentTimeMillis() - time) / 1000 / 60} minutes"
     }
 
-    void persistLinksChangedSince(Long previousLastChange) {
+    void persistLinksChangedSince(Date previousLastChange) {
         agrovocRepository.eachLinkChangedSince(previousLastChange) { link ->
-            termRepository.persistLink(link)
+            termPersister.persistLink(link)
             linkListeners.each { it.call(link) }
         }
 
     }
 
-    private Long persistTermsChangedSince(Long previousLastChange) {
-        Long lastChanged = null
-        agrovocRepository.eachTermChangedSince(previousLastChange) { term ->
-            termRepository.persistTerm(term)
+    private Date persistTermsChangedSince(Date previousLastChange) {
+        Date lastChanged = null
+        agrovocRepository.eachTermChangedSince(previousLastChange) { Term term ->
+            termPersister.persistTerm(term)
             createListeners.each { it.call(term) }
             if (lastChanged < term.lastChanged)
-                lastChanged = term.lastChanged as Long
+                lastChanged = term.lastChanged
         }
         return lastChanged
     }
