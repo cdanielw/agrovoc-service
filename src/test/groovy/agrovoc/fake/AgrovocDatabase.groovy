@@ -51,11 +51,11 @@ class AgrovocDatabase {
     }
 
     void insertTerm(Term term) {
-        term.labelByLanguage.each { language, label ->
+        term.descriptionByLanguage.each { language, description ->
             sql.executeInsert('INSERT INTO agrovocterm(termcode, termspell, statusid, languagecode, scopeid, lastupdate) VALUES(?, ?, ?, ?, ?, ?)', [
                     term.code,
-                    label,
-                    term.status ?: 20,
+                    description.label,
+                    description.status ?: 20,
                     language ?: 'EN',
                     term.scope ?: '',
                     term.lastChanged ?: new Date()])
@@ -63,7 +63,7 @@ class AgrovocDatabase {
     }
 
     void insertLink(TermLinks links) {
-        links.each {endTermCode, linkType ->
+        links.each { endTermCode, linkType ->
             sql.executeInsert('INSERT INTO termlink(termcode1, termcode2, newlinktypeid) VALUES(?, ?, ?)', [
                     links.startTermCode, endTermCode, linkType])
         }

@@ -4,14 +4,39 @@ package agrovoc.dto
  * @author Daniel Wiell
  */
 class Term {
-    long code
-    int status
-    String scope
-    Date lastChanged
-    Map<String, String> labelByLanguage = [:]
+    final long code
+    final String scope
+    final Date lastChanged
+    final Map<String, TermDescription> descriptionByLanguage = [:]
+
+    Term(long code, String scope, Date lastChanged) {
+        this.code = code
+        this.scope = scope
+        this.lastChanged = lastChanged
+        assert code
+        assert lastChanged
+    }
 
     public java.lang.String toString() {
-        "$code: $labelByLanguage"
+        "$code: $descriptionByLanguage"
+    }
+}
+
+class TermDescription {
+    final String language
+    final int status
+    final String label
+
+    TermDescription(String language, int status, String label) {
+        this.language = language
+        this.status = status
+        this.label = label
+        assert language
+        assert label
+    }
+
+    public java.lang.String toString() {
+        "$label ($status)"
     }
 }
 

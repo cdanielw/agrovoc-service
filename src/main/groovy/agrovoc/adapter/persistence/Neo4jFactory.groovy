@@ -32,10 +32,6 @@ class EmbeddedNeo4jFactory implements Neo4jFactory {
     static void configureIndex(GraphDatabaseService graphDb) {
         def index = graphDb.index()
         index.forNodes('terms', [(IndexManager.PROVIDER): 'lucene', type: 'exact'])
-//        index.forNodes('termDescriptions', [
-//                (IndexManager.PROVIDER): 'lucene',
-//                type: 'fulltext',
-//                analyzer: 'org.apache.lucene.analysis.SimpleAnalyzer'])
         index.forNodes('termDescriptions', [(IndexManager.PROVIDER): 'lucene', type: 'fulltext'])
     }
 }

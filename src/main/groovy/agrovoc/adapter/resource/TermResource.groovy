@@ -1,5 +1,6 @@
 package agrovoc.adapter.resource
 
+import agrovoc.dto.LabelQuery
 import agrovoc.port.resource.TermProvider
 import groovy.json.JsonOutput
 
@@ -24,10 +25,31 @@ class TermResource {
     @GET
     @Path("/{code}")
     @Produces('application/json')
-    String get(@PathParam('code') long code,
-               @QueryParam('language') String language) {
+    String termByCode(@PathParam('code') long code,
+                      @QueryParam('language') String language) {
         def term = termProvider.getByCode(code, language ?: 'EN')
         termToJson(term)
+    }
+
+    @GET
+    @Path("/label/{label}")
+    @Produces('application/json')
+    String termByLabel(@PathParam('label') String label,
+                       @QueryParam('language') String language) {
+        def term = termProvider.findByLabel(label, language ?: 'EN')
+        if (!term) return '{}' // TODO: Handle this better
+        termToJson(term)
+    }
+
+    @GET
+    @Produces('application/json')
+    String terms(@QueryParam('code[]') List<Long> codes,
+                 @QueryParam('language') String language) {
+        // TODO: Make more efficient
+        def terms = codes.collect {
+            termProvider.getByCode(it, language ?: 'EN')
+        }
+        termsToJson(terms)
     }
 
     @GET
@@ -44,10 +66,16 @@ class TermResource {
     }
 
     @GET
+    @Path("/find")
     @Produces('application/json')
-    String find(@QueryParam('q') String query,
-                @QueryParam('language') String language) {
-        def terms = termProvider.query(query, language ?: 'EN')
+    String find(@QueryParam('startsWith') boolean startsWith,
+                @QueryParam('q') String query,
+                @QueryParam('language') String language,
+                @QueryParam('max') Integer max) {
+        def labelQuery = new LabelQuery(query, language ?: 'EN', max ?: 20)
+        def terms = startsWith ?
+            termProvider.findAllWhereLabelStartsWith(labelQuery) :
+            termProvider.findAllWhereWordInLabelStartsWith(labelQuery)
         termsToJson(terms)
     }
 

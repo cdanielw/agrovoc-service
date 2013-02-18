@@ -2,6 +2,7 @@ package agrovoc.domain
 
 import agrovoc.dto.Term
 import agrovoc.dto.TermLinks
+import agrovoc.dto.LabelQuery
 import agrovoc.port.agrovoc.AgrovocRepository
 import agrovoc.port.cron.AgrovocTermPollingJob
 import agrovoc.port.event.TermEventPublisher
@@ -51,7 +52,6 @@ class TermService implements AgrovocTermPollingJob, TermEventPublisher, TermProv
 
     private void persistLinksChangedSince(Date previousLastChange) {
         agrovocRepository.eachLinkChangedSince(previousLastChange) { TermLinks links ->
-            println "Persisting links: $links"
             termPersister.persistLinks(links)
             linkListeners.each { it.call(links) }
         }
@@ -70,8 +70,16 @@ class TermService implements AgrovocTermPollingJob, TermEventPublisher, TermProv
         termRepository.getByCode(code, language)
     }
 
-    List<Map<String, Object>> query(String query, String language) {
-        termRepository.queryByLabel(query, language)
+    Map<String, Object> findByLabel(String label, String language) {
+        termRepository.findByLabel(label, language)
+    }
+
+    List<Map<String, Object>> findAllWhereLabelStartsWith(LabelQuery query) {
+        termRepository.findAllWhereLabelStartsWith(query)
+    }
+
+    List<Map<String, Object>> findAllWhereWordInLabelStartsWith(LabelQuery query) {
+        termRepository.findAllWhereWordInLabelStartsWith(query)
     }
 
     List<Map<String, Object>> getLinksByCode(long code, String language) {

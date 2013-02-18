@@ -18,13 +18,6 @@ class NodeExtension {
         node.getProperty(key)
     }
 
-    static Node leftShift(Node node, Map<String, Object> map) {
-        map.each { key, value ->
-            node.setProperty(key, value)
-        }
-        return node
-    }
-
     static Map toMap(Node node) {
         def map = [:]
         node.getPropertyKeys().each {

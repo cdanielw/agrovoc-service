@@ -19,6 +19,8 @@ import javax.servlet.ServletContextListener
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 
+import static agrovoc.setup.ConfigurationHolder.*
+
 /**
  * @author Daniel Wiell
  */
@@ -32,13 +34,11 @@ class AgrovocService {
     private static Boolean started
     private static Neo4j neo4j = new Neo4j()
 
-    void init() {
-        doInit()
-    }
+    void init() { doInit() }
 
-    void stop() {
-        neo4j.stop()
-    }
+    void stop() { neo4j.stop() }
+
+    void destroy() { configuration.destroy() }
 
     Term createTerm(Term term) {
         insertAndWaitUntilCreated([term], [])
@@ -55,7 +55,7 @@ class AgrovocService {
         def linked = new BlockingVariable<Boolean>(2, TimeUnit.SECONDS)
         def createCount = new AtomicInteger()
         def linkCount = new AtomicInteger()
-        def eventPublisher = ConfigurationHolder.configuration.services[TermEventPublisher]
+        def eventPublisher = configuration.services[TermEventPublisher]
         eventPublisher.registerCreateListener {
             if (createCount.incrementAndGet() >= terms.size())
                 created.set(true)

@@ -1,65 +1,53 @@
+<!DOCTYPE html>
 <html>
 <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <title>Test</title>
+    <link href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.0/css/bootstrap-combined.min.css" rel="stylesheet">
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <script src="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.0/js/bootstrap.min.js"></script>
+    <script src="/js/jquery.agrovoc.js"></script>
 </head>
 <body>
 <h1>Test</h1>
 
 <form action="../term" method="get">
     <label>
-        Query:
-        <input id="q" name="q" type="text" autocomplete="off">
-    </label>
-    <label>
         Language:
-        <select>
-            <option value="EN">English</option>
-            <option value="FR">French</option>
+        <select id="language">
+            <option value="AR">العربية</option>
+            <option value="CS">Cesky</option>
+            <option value="DE">Deutsch</option>
+            <option value="EN" selected="selected">English</option>
+            <option value="ES">Español</option>
+            <option value="FA">فارسی</option>
+            <option value="FR">Français</option>
+            <option value="HI">Hindi</option>
+            <option value="HU">Hungarian</option>
+            <option value="IT">Italiano</option>
+            <option value="JA">Japanese</option>
+            <option value="KO">Korean</option>
+            <option value="LO">Lao</option>
+            <option value="MS">bahasa melayu</option>
+            <option value="PL">Polish</option>
+            <option value="PT">Português</option>
+            <option value="RU">Russian</option>
+            <option value="SK">Slovak</option>
+            <option value="TE">తెలుగు</option>
+            <option value="TH">Thai</option>
+            <option value="TR">türkçe</option>
+            <option value="ZH">中文</option>
         </select>
 
     </label>
-
-    <div id="result"></div>
+    <label>
+        Query:
+        <input id="q" type="text" autocomplete="off" data-provide="typeahead">
+    </label>
 </form>
-<script type="text/javascript">
-    $(function () {
-        var minlength = 1;
-        var input = $('#q');
-        var languageInput = $('#language');
-        var url = $('form').attr('action');
-        input.keyup(function () {
-            var that = this;
-            var value = $(this).val();
-            var language = languageInput.val();
 
-            if (value.length >= minlength) {
-                if (!input.hasClass('loading'))
-                    input.addClass('loading');
-                $.ajax({
-                    type: "GET",
-                    url: url,
-                    data: { q: value, language: language },
-                    dataType: "json"
-                }).done(function (data) {
-                            //we need to check if the value is the same
-                            if (value == $(that).val()) {
-                                $('#result').html('');
-                                $.each(data, function () {
-                                    var term = $('#result').append('<div class="term">' + this.label + '</div>');
-                                    $.each(this.links, function (rel, link) {
-                                        term.append('<div><a href="' + link + '">' + rel + '</a></div>');
-                                    });
-                                    term.append('<hr>');
-                                });
-                                input.removeClass('loading');
-                            }
-                        });
-            } else {
-                $('#result').html('');
-            }
-        });
-    })
-</script>
+<div id="result"></div>
+
 </body>
 </html>

@@ -1,10 +1,11 @@
 package agrovoc.adapter.persistence
 
+import agrovoc.dto.LabelQuery
 import agrovoc.dto.Term
+import agrovoc.dto.TermDescription
 import agrovoc.dto.TermLinks
 import agrovoc.exception.NotFoundException
 import agrovoc.neo4j.Neo4j
-import agrovoc.port.persistence.Neo4jTermPersister
 import spock.lang.Specification
 
 /**
@@ -38,7 +39,7 @@ class Neo4jTermRepository_IntegrationTest extends Specification {
         persister.persistTerm(term)
 
         when:
-        def result = repository.queryByLabel('Label', 'EN')
+        def result = repository.findAllWhereWordInLabelStartsWith(query('Label', 'EN'))
 
         then:
         result.size() == 1
@@ -49,7 +50,7 @@ class Neo4jTermRepository_IntegrationTest extends Specification {
         persister.persistTerm(createTerm('Term label', 465, 'FR'))
 
         when:
-        def result = repository.queryByLabel('Label', 'FR')
+        def result = repository.findAllWhereWordInLabelStartsWith(query('Label', 'FR'))
 
         then:
         result.size() == 1
@@ -60,24 +61,24 @@ class Neo4jTermRepository_IntegrationTest extends Specification {
         persister.persistTerm(term)
 
         when:
-        def result = repository.queryByLabel('Label', 'EN')
+        def result = repository.findAllWhereWordInLabelStartsWith(query('Label', 'EN'))
 
         then:
         result.empty
     }
 
     def 'Sorts results by label'() {
-        persister.persistTerm(createTerm('C Term label', 1))
+        persister.persistTerm(createTerm('c Term label', 1))
         persister.persistTerm(createTerm('A Term label', 2))
-        persister.persistTerm(createTerm('B Term label', 3))
+        persister.persistTerm(createTerm('b Term label', 3))
         persister.persistTerm(createTerm('E Term label', 4))
-        persister.persistTerm(createTerm('D Term label', 5))
+        persister.persistTerm(createTerm('d Term label', 5))
 
         when:
-        def result = repository.queryByLabel('Label', 'EN')
+        def result = repository.findAllWhereWordInLabelStartsWith(query('Label', 'EN'))
 
         then:
-        result.collect { it.label.substring(0, 1) } == ['A', 'B', 'C', 'D', 'E']
+        result.collect { it.label.substring(0, 1).toUpperCase() } == ['A', 'B', 'C', 'D', 'E']
     }
 
     def 'Updating term generates no new node'() {
@@ -86,7 +87,7 @@ class Neo4jTermRepository_IntegrationTest extends Specification {
         persister.persistTerm term
 
         when:
-        def result = repository.queryByLabel('label', 'EN')
+        def result = repository.findAllWhereWordInLabelStartsWith(query('label', 'EN'))
 
         then: result.size() == 1
     }
@@ -174,15 +175,75 @@ class Neo4jTermRepository_IntegrationTest extends Specification {
         result.empty
     }
 
+    def 'Given matching term, when finding by label, term is returned'() {
+        String label = 'Term'
+        def term = createTerm(label, 123, 'EN')
+        persister.persistTerm(term)
+
+        when:
+        def result = repository.findByLabel(label, 'EN')
+
+        then: result
+    }
+
+    def 'Given matching term with different case, when finding by label, term is returned'() {
+        def term = createTerm('TeRm', 123, 'EN')
+        persister.persistTerm(term)
+
+        when:
+        def result = repository.findByLabel('tErM', 'EN')
+
+        then: result
+    }
+
+    def 'Given query matching part of term, when finding by label, term is not returned'() {
+        def term = createTerm('Term Almost Matching', 123, 'EN')
+        persister.persistTerm(term)
+
+        when:
+        def result = repository.findByLabel('Term', 'EN')
+
+        then: !result
+    }
+
+    def 'Given matching term, when finding by start, term is returned'() {
+        def term = createTerm('Term Should Match', 123, 'EN')
+        persister.persistTerm(term)
+
+        when:
+        def result = repository.findAllWhereLabelStartsWith(query('Term', 'EN'))
+
+        then: result.size() == 1
+    }
+
+    def 'Given term not starting but containing query, when finding by start, term is not returned'() {
+        def term = createTerm('Should Not Match Term', 123, 'EN')
+        persister.persistTerm(term)
+
+        when:
+        def result = repository.findAllWhereLabelStartsWith(query('Term', 'EN'))
+
+        then: !result
+    }
+
     private Term createTerm(String label, long code = 123L, String language = 'EN') {
-        new Term(code: code, status: 20, scope: '', labelByLanguage: [(language): label])
+        def term = new Term(code, '', new Date())
+        term.descriptionByLanguage[language] = new TermDescription(language, 20, label)
+        return term
     }
 
     private Term createNonDescriptorTerm(String label, long code = 123L, String language = 'EN') {
-        new Term(code: code, status: 60, scope: '', labelByLanguage: [(language): label])
+        def term = new Term(code, '', new Date())
+        term.descriptionByLanguage[language] = new TermDescription(language, 60, label)
+        return term
     }
 
     private Map<String, Object> toMap(Term term, String language) {
-        [code: term.code, status: term.status, scope: term.scope, language: language, label: term.labelByLanguage[language]]
+        def description = term.descriptionByLanguage[language]
+        [code: term.code, scope: term.scope, language: language, label: description.label, status: description.status]
+    }
+
+    private LabelQuery query(String query, String language) {
+        new LabelQuery(query, language, 20)
     }
 }

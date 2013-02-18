@@ -1,7 +1,10 @@
-package agrovoc.port.persistence
+package agrovoc.adapter.persistence
 
 import agrovoc.dto.Term
+import agrovoc.dto.TermDescription
 import agrovoc.dto.TermLinks
+import agrovoc.port.persistence.NodeFinder
+import agrovoc.port.persistence.TermPersister
 import org.neo4j.graphdb.*
 
 import static org.neo4j.graphdb.Direction.INCOMING
@@ -48,7 +51,6 @@ class Neo4jTermPersister implements TermPersister {
 
     }
 
-
     void setLastChanged(Date lastChange) {
         assert lastChange != null
         graphDb.transact {
@@ -67,9 +69,9 @@ class Neo4jTermPersister implements TermPersister {
 
     private void updateDescriptionNodes(Node termNode, Term term) {
         removeDescriptions(termNode)
-        term.labelByLanguage.each { language, label ->
-            Node descriptionNode = createTermDescriptionNode(termNode, term, language)
-            indexTermDescription(descriptionNode, term, language)
+        term.descriptionByLanguage.each { language, description ->
+            Node descriptionNode = createDescriptionNode(termNode, description)
+            indexTermDescription(descriptionNode, term, description)
         }
     }
 
@@ -82,43 +84,34 @@ class Neo4jTermPersister implements TermPersister {
         }
     }
 
-    private Node createTermDescriptionNode(Node termNode, Term term, String language) {
+    private Node createDescriptionNode(Node termNode, TermDescription description) {
         def termDescriptionNode = graphDb.createNode()
-        termDescriptionNode['language'] = language
-        termDescriptionNode['label'] = term.labelByLanguage[language]
+        termDescriptionNode['language'] = description.language.toUpperCase()
+        termDescriptionNode['label'] = description.label
+        termDescriptionNode['label'] = description.label
+        termDescriptionNode['status'] = description.status
         termDescriptionNode.createRelationshipTo(termNode, DESCRIBES)
         return termDescriptionNode
     }
 
-    private void indexTermDescription(Node termDescriptionNode, Term term, String language) {
+    private void indexTermDescription(Node termDescriptionNode, Term term, TermDescription description) {
         def termDescriptions = graphDb.index().forNodes('termDescriptions')
         termDescriptions.with {
             remove(termDescriptionNode)
-            add(termDescriptionNode, 'code', term.code)
-            add(termDescriptionNode, 'status', term.status)
+            add(termDescriptionNode, 'code', term.code as String)
             add(termDescriptionNode, 'scope', term.scope)
-            add(termDescriptionNode, 'language', language)
-            add(termDescriptionNode, 'label', term.labelByLanguage[language])
+            add(termDescriptionNode, 'status', description.status as String)
+            add(termDescriptionNode, 'language', description.language)
+            add(termDescriptionNode, 'label', description.label.toLowerCase(new Locale(description.language)))
         }
     }
 
     private void updateTerm(Node termNode, Term term) {
         termNode['code'] = term.code
-        termNode['status'] = term.status
         termNode['scope'] = term.scope
         def terms = graphDb.index().forNodes('terms')
+        terms.remove(termNode)
         terms.add(termNode, 'code', term.code)
-    }
-
-    private Node findTermDescriptionNode(Node termNode, String language) {
-        def relationship = termNode.getRelationships(DESCRIBES, INCOMING).find {
-            it.startNode['language'] == language
-        } as Relationship
-        def node = relationship?.startNode
-        if (node) return node
-        if (language != ENGLISH)
-            node = findTermDescriptionNode(termNode, ENGLISH)
-        return node
     }
 
     private Node findLastChangedNode() {
@@ -131,12 +124,12 @@ class Neo4jTermPersister implements TermPersister {
 
     private void validateTerm(Term term) {
         assert term.code
-        assert term.labelByLanguage
-        assert term.status
         assert term.scope != null
-        assert term.labelByLanguage.each { language, label ->
+        assert term.lastChanged
+        assert term.descriptionByLanguage
+        term.descriptionByLanguage.each { language, description ->
             assert language
-            assert label
+            assert description
         }
     }
 

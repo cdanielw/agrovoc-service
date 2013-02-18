@@ -1,6 +1,7 @@
 package agrovoc.adapter.agrovoc
 
 import agrovoc.dto.Term
+import agrovoc.dto.TermDescription
 import agrovoc.dto.TermLinks
 import agrovoc.port.agrovoc.AgrovocRepository
 import groovy.sql.GroovyResultSet
@@ -31,17 +32,19 @@ class DataSourceAgrovocRepository implements AgrovocRepository {
                 if (term) callback.call(term)
                 term = createTerm(rs)
             }
-            term.labelByLanguage[rs.getString('languagecode')] = rs.getString('termspell')
+            String language = rs.getString('languagecode')
+            TermDescription termDescription = new TermDescription(
+                    language, rs.getInt('statusid'), rs.getString('termspell'))
+            term.descriptionByLanguage[language] = termDescription
         }
         if (term) callback.call(term)
     }
 
     void eachLinkChangedSince(Date date, Closure callback) {
-        println 'Each since changed'
         if (!date) date = new Date(0)
         TermLinks termLinks = null
         sql.eachRow('''
-                SELECT termcode1, termcode2 end, newlinktypeid
+                SELECT termcode1, termcode2, newlinktypeid
                 FROM termlink l
                 JOIN agrovocterm t ON t.termcode = l.termcode1
                 WHERE lastupdate > ? AND termspell != ''
@@ -59,10 +62,7 @@ class DataSourceAgrovocRepository implements AgrovocRepository {
     }
 
     private Term createTerm(GroovyResultSet rs) {
-        new Term(
-                code: rs.getLong('termcode'),
-                status: rs.getInt('statusid'),
-                scope: rs.getString('scopeid'),
-                lastChanged: rs.getDate('lastupdate'))
+        Date lastChanged = new Date(rs.getTimestamp('lastupdate').time)
+        new Term(rs.getLong('termcode'), rs.getString('scopeid'), lastChanged)
     }
 }

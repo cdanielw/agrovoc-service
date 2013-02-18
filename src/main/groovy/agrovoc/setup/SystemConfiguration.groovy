@@ -11,7 +11,7 @@ import agrovoc.domain.TermService
 import agrovoc.port.agrovoc.AgrovocRepository
 import agrovoc.port.cron.AgrovocTermPollingJob
 import agrovoc.port.event.TermEventPublisher
-import agrovoc.port.persistence.Neo4jTermPersister
+import agrovoc.adapter.persistence.Neo4jTermPersister
 import agrovoc.port.persistence.TermPersister
 import agrovoc.port.persistence.TermRepository
 import agrovoc.port.resource.TermProvider
