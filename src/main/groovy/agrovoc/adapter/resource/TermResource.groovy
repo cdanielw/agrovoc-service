@@ -7,6 +7,7 @@ import groovy.json.JsonOutput
 import javax.ws.rs.*
 import javax.ws.rs.core.Context
 import javax.ws.rs.core.UriInfo
+import javax.xml.ws.WebServiceException
 
 /**
  * @author Daniel Wiell
@@ -24,55 +25,55 @@ class TermResource {
 
     @GET
     @Path("/{code}")
-    @Produces('application/json')
+    @Produces('application/x-javascript')
     String termByCode(@PathParam('code') long code,
                       @QueryParam('language') String language) {
         def term = termProvider.getByCode(code, language ?: 'EN')
-        termToJson(term)
+        termToJsonp(term)
     }
 
     @GET
     @Path("/label/{label}")
-    @Produces('application/json')
+    @Produces('application/x-javascript')
     String termByLabel(@PathParam('label') String label,
                        @QueryParam('language') String language) {
         def term = termProvider.findByLabel(label, language ?: 'EN')
-        if (!term) return '{}' // TODO: Handle this better
-        termToJson(term)
+        if (!term) return "${callback}({})" // TODO: Handle this better
+        termToJsonp(term)
     }
 
     @GET
-    @Produces('application/json')
+    @Produces('application/x-javascript')
     String terms(@QueryParam('code[]') List<Long> codes,
                  @QueryParam('language') String language) {
         // TODO: Make more efficient
         def terms = codes.collect {
             termProvider.getByCode(it, language ?: 'EN')
         }
-        termsToJson(terms)
+        termsToJsonp(terms)
     }
 
     @GET
     @Path("/{code}/broader")
-    @Produces('application/json')
+    @Produces('application/x-javascript')
     String broader(@PathParam('code') long code,
                    @QueryParam('language') String language) {
         def terms = termProvider.findAllBroaderTerms(code, language ?: 'EN')
-        termsToJson(terms)
+        termsToJsonp(terms)
     }
 
     @GET
     @Path("/{code}/narrower")
-    @Produces('application/json')
+    @Produces('application/x-javascript')
     String narrower(@PathParam('code') long code,
-                   @QueryParam('language') String language) {
+                    @QueryParam('language') String language) {
         def terms = termProvider.findAllNarrowerTerms(code, language ?: 'EN')
-        termsToJson(terms)
+        termsToJsonp(terms)
     }
 
     @GET
     @Path("/find")
-    @Produces('application/json')
+    @Produces('application/x-javascript')
     String find(@QueryParam('startsWith') boolean startsWith,
                 @QueryParam('q') String query,
                 @QueryParam('language') String language,
@@ -81,17 +82,24 @@ class TermResource {
         def terms = startsWith ?
             termProvider.findAllWhereLabelStartsWith(labelQuery) :
             termProvider.findAllWhereWordInLabelStartsWith(labelQuery)
-        termsToJson(terms)
+        termsToJsonp(terms)
     }
 
-    private String termToJson(term) {
+    private String termToJsonp(term) {
         addLinks(term)
-        JsonOutput.toJson(term)
+        "${callback}(${JsonOutput.toJson(term)})";
     }
 
-    private String termsToJson(terms) {
+    private String termsToJsonp(terms) {
         terms.each { addLinks(it) }
-        JsonOutput.toJson(terms)
+        "${callback}(${JsonOutput.toJson(terms)})";
+    }
+
+    private String getCallback() {
+        def callback = ui.queryParameters.callback?.first()
+        if (!callback)
+            throw new WebServiceException('callback parameter missing') // TODO: Handle this with a 400
+        return callback
     }
 
     private void addLinks(term) {

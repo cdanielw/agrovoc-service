@@ -31,7 +31,7 @@
             if (!this.options.codes) return;
             var codes = this.options.codes ? $.parseJSON('[' + this.options.codes + ']') : [];
             var agrovoc = this;
-            $.getJSON(this.options.url + '/term', { code: codes }, function (data) {
+            $.getJSON(this.options.url + '/term?callback=?', { code: codes }, function (data) {
                 agrovoc.addTerms(data)
             })
         },
@@ -142,14 +142,14 @@
             return $('<div class="agrovoc-hidden"></ul>').insertAfter(this.$element);
         },
         findAllTerms: function (query, startsWith) {
-            return $.getJSON(this.options.url + '/term/find', {
+            return $.getJSON(this.options.url + '/term/find?callback=?', {
                 q: query,
                 language: this.options.language,
                 max: this.options.items,
                 startsWith: startsWith });
         },
         findTermByLabel: function (label) {
-            return $.getJSON(this.options.url + '/term/label/' + label, { language: this.options.language });
+            return $.getJSON(this.options.url + '/term/label/' + label + '?callback=?', { language: this.options.language });
         },
         isTermDescriptor: function (term) {
             return term.status == 20;
@@ -175,7 +175,10 @@
                         }
                     });
                     return process(labels);
-                }).fail(function () {
+                }).fail(function (jqXHR, textStatus, errorThrown) {
+                    console.log(jqXHR);
+                    console.log(textStatus);
+                    console.log(errorThrown);
                     alert('failed')
                 });
         },
@@ -197,7 +200,7 @@
             var term = agrovoc.termsByLabel[label];
             if (agrovoc.isTermDescriptor(term))
                 agrovoc.selectTerm(term); // TODO: Handle case where non-term descriptor is selected
-            var url = term.links.broader;
+            var url = term.links.broader + '&callback=?';
             $.getJSON(url).done(function (broaderTerms) {
                 agrovoc.$suggestedTermsElement.remove();
                 agrovoc.$suggestedTermsElement = agrovoc.insertSuggestedTermsElement();
