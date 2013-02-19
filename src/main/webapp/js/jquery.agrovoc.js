@@ -70,6 +70,7 @@
             this.terms.push(term);
         },
         addSuggestedTerm: function (term) {
+            if (this.isTermAlreadySelected(term)) return false;
             var $item = $('<li class="agrovoc-term" data-code="' + term.code + '">'
                 + '<i class="icon-plus-sign icon-white"></i><span>' + term.label
                 + '</span></li>');
