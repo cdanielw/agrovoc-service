@@ -28,8 +28,9 @@
     Agrovoc.prototype = {
         constructor: Agrovoc,
         loadTerms: function () {
-            var agrovoc = this;
+            if (!this.options.codes) return;
             var codes = this.options.codes ? $.parseJSON('[' + this.options.codes + ']') : [];
+            var agrovoc = this;
             $.getJSON(this.options.url + '/term', { code: codes }, function (data) {
                 agrovoc.addTerms(data)
             })

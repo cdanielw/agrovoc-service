@@ -1,12 +1,9 @@
 package agrovoc.endtoend
-
 import agrovoc.dto.Term
 import agrovoc.dto.TermDescription
-import agrovoc.dto.TermLinks
 import groovyx.net.http.RESTClient
 import spock.lang.Shared
 import spock.lang.Specification
-
 /**
  * @author Daniel Wiell
  */
@@ -77,20 +74,6 @@ class Resource_FunctionalTest extends Specification {
 
         when:
         def result = client.get(path: "term", query: ['code[]': [123, 456]]).data
-
-        then:
-        result.size() == 2
-    }
-
-    def 'When finding links, JSON representation is returned'() {
-        service.createTerms([
-                createTerm(123, [EN: 'Term 1']),
-                createTerm(456, [EN: 'Term 2']),
-                createTerm(798, [EN: 'Term 3'])], [
-                new TermLinks(startTermCode: 123).add(456, 1000).add(798, 2000)
-        ])
-        when:
-        def result = client.get(path: "term/123/links").data
 
         then:
         result.size() == 2

@@ -16,6 +16,7 @@ import org.neo4j.graphdb.traversal.TraversalDescription
 import org.neo4j.index.lucene.QueryContext
 import org.neo4j.kernel.Uniqueness
 
+import static agrovoc.adapter.persistence.StatusType.*
 import static org.apache.lucene.search.BooleanClause.Occur.MUST
 import static org.apache.lucene.search.BooleanClause.Occur.MUST_NOT
 import static org.neo4j.graphdb.Direction.OUTGOING
@@ -85,15 +86,18 @@ class Neo4jTermRepository implements TermRepository {
     private List<Map<String, Object>> execute(LabelQuery query, Query labelRestriction) {
         def booleanQuery = new BooleanQuery()
         booleanQuery.add(new TermQuery(new Term('language_e', query.language.toUpperCase())), MUST)
-        booleanQuery.add(new TermQuery(new Term('status_e', '0')), MUST_NOT)
-        booleanQuery.add(new TermQuery(new Term('status_e', '60')), MUST_NOT)
-        booleanQuery.add(new TermQuery(new Term('status_e', '100')), MUST_NOT)
-        booleanQuery.add(new TermQuery(new Term('status_e', '120')), MUST_NOT)
+        excludeStatusTypes(booleanQuery, DELETED, TOP_TERM_DESCRIPTOR, PROPOSED_DESCRIPTOR, NOT_ACCEPTED)
         booleanQuery.add(labelRestriction, MUST)
 
         def termDescriptions = graphDb.index().forNodes('termDescriptions')
         def hits = termDescriptions.query(new QueryContext(booleanQuery).sort('label_e'))
         toTerms(hits, query.max)
+    }
+
+    private void excludeStatusTypes(BooleanQuery booleanQuery, StatusType... statusTypes) {
+        statusTypes.each {
+            booleanQuery.add(new TermQuery(new Term('status_e', it.idString)), MUST_NOT)
+        }
     }
 
     List<Map<String, Object>> findAllBroaderTerms(long code, String language) {
@@ -109,14 +113,8 @@ class Neo4jTermRepository implements TermRepository {
             if (!last) return null
             def endTerm = path.lastRelationship().endNode
             def endTermDescription = nodes.findTermDescription(endTerm, language)
-            if (endTermDescription && endTermDescription['status'] == 20) {
+            if (endTermDescription && endTermDescription['status'] == DESCRIPTOR.id)
                 terms << toTerm(endTerm, endTermDescription)
-
-                // TODO: Temp
-                if (endTermDescription.hasProperty('label')) {
-                    println "${('  ' * path.length())}${LinkType.values().find { it.id == last.type.name() as long }.name() } ${endTermDescription['label']}"
-                }
-            }
         }
         return terms
     }

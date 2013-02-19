@@ -48,6 +48,7 @@
                data-provide="agrovoc"
                data-url="http://168.202.48.143:8080/agrovoc"
                data-codes="${fn:join(paramValues['terms'],', ')}">
+
         <input type="submit" value="Submit">
 
     </form>
