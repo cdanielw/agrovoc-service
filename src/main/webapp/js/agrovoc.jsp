@@ -53,11 +53,5 @@
 
     </form>
 </div>
-<script type="text/javascript">
-    $(function () {
-        $('#id').focus();
-    })
-</script>
-
 </body>
 </html>

@@ -36,8 +36,8 @@
             })
         },
         removeTerm: function (term) {
-            $.grep(this.terms, function () {
-                return this.code != term.code;
+            this.terms = $.grep(this.terms, function (t) {
+                return t.code != term.code;
             });
             this.$selectedTermsElement.children().each(function () {
                 var $item = $(this);
@@ -53,11 +53,12 @@
                     return false;
                 }
             });
+            this.addSuggestedTerm(term)
         },
         selectTerm: function (term) {
             if (this.isTermAlreadySelected(term)) return false;
             var $item = $('<li class="agrovoc-term" data-code="' + term.code + '">'
-                + '<i class="icon-remove-sign icon-white"></i><span>' + term.label
+                + '<i class="icon-minus-sign icon-white"></i><span>' + term.label
                 + '</span></li>');
             this.appendTermListItem(term, this.$selectedTermsElement, $item);
 
@@ -65,6 +66,7 @@
             $item.click(function (event) {
                 event.preventDefault();
                 agrovoc.removeTerm(term);
+                agrovoc.$element.focus();
                 return false;
             });
             this.$inputsElement.append('<input type="hidden" name="' + this.inputName + '" value="' + term.code + '"/>');
@@ -81,6 +83,7 @@
                 event.preventDefault();
                 $item.remove();
                 agrovoc.selectTerm(term);
+                agrovoc.$element.focus();
                 return false;
             });
             this.appendTermListItem(term, this.$suggestedTermsElement, $item);
@@ -155,7 +158,11 @@
             return term.status == 20;
         },
         source: function (query, process) {
+            query = $.trim(query);
+            if (query.length == 0) return false;
             var agrovoc = this.options.agrovoc;
+            agrovoc.$suggestedTermsElement.remove();
+            agrovoc.$suggestedTermsElement = agrovoc.insertSuggestedTermsElement();
             $.when(
                     agrovoc.findTermByLabel(query),
                     agrovoc.findAllTerms(query, true),
