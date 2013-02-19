@@ -1,4 +1,5 @@
 package agrovoc.adapter.persistence
+
 import agrovoc.dto.LabelQuery
 import agrovoc.port.persistence.NodeFinder
 import agrovoc.port.persistence.TermRepository
@@ -8,7 +9,6 @@ import org.apache.lucene.search.BooleanQuery
 import org.apache.lucene.search.Query
 import org.apache.lucene.search.TermQuery
 import org.apache.lucene.search.WildcardQuery
-import org.neo4j.graphdb.DynamicRelationshipType
 import org.neo4j.graphdb.GraphDatabaseService
 import org.neo4j.graphdb.Node
 import org.neo4j.graphdb.index.IndexHits
@@ -20,12 +20,33 @@ import static org.apache.lucene.search.BooleanClause.Occur.MUST
 import static org.apache.lucene.search.BooleanClause.Occur.MUST_NOT
 import static org.neo4j.graphdb.Direction.OUTGOING
 import static org.neo4j.kernel.Traversal.traversal
+
 /**
  * @author Daniel Wiell
  */
 class Neo4jTermRepository implements TermRepository {
-    public static final TraversalDescription RELATED_TRAVERSAL = traversal(Uniqueness.NODE_GLOBAL)
-            .relationships(DynamicRelationshipType.withName('50'), OUTGOING)
+    public static final TraversalDescription BROADER_TRAVERSAL = traversal(Uniqueness.NODE_GLOBAL)
+            .relationships(LinkType.SUBCLASS_OF.type, OUTGOING)
+            .relationships(LinkType.INCLUDED_IN.type, OUTGOING)
+            .relationships(LinkType.HAS_SYNONYM.type, OUTGOING)
+            .relationships(LinkType.HAS_NEAR_SYNONYM.type, OUTGOING)
+            .relationships(LinkType.HAS_BROARDER_SYNONYM.type, OUTGOING)
+            .relationships(LinkType.IS_ACRONYM_OF.type, OUTGOING)
+            .relationships(LinkType.HAS_ACRONYM.type, OUTGOING)
+            .relationships(LinkType.IS_ABBREVIATION_OF.type, OUTGOING)
+            .relationships(LinkType.HAS_ABBREVIATION.type, OUTGOING)
+
+    public static final TraversalDescription NARROWER_TRAVERSAL = traversal(Uniqueness.NODE_GLOBAL)
+            .relationships(LinkType.HAS_SUBCLASS.type, OUTGOING)
+            .relationships(LinkType.INCLUDES.type, OUTGOING)
+            .relationships(LinkType.HAS_SYNONYM.type, OUTGOING)
+            .relationships(LinkType.HAS_NEAR_SYNONYM.type, OUTGOING)
+            .relationships(LinkType.HAS_BROARDER_SYNONYM.type, OUTGOING)
+            .relationships(LinkType.IS_ACRONYM_OF.type, OUTGOING)
+            .relationships(LinkType.HAS_ACRONYM.type, OUTGOING)
+            .relationships(LinkType.IS_ABBREVIATION_OF.type, OUTGOING)
+            .relationships(LinkType.HAS_ABBREVIATION.type, OUTGOING)
+
     private final GraphDatabaseService graphDb
     private final NodeFinder nodes
 
@@ -75,16 +96,33 @@ class Neo4jTermRepository implements TermRepository {
         toTerms(hits, query.max)
     }
 
-    List<Map<String, Object>> getLinksByCode(long code, String language) {
-        def startNode = nodes.getTermByCode(code)
-        def startTerm = toTerm(startNode, nodes.getTermDescription(startNode, language))
-        startNode.getRelationships(OUTGOING).findAll { relationship ->
-            nodes.findTermDescription(relationship.endNode, language)
-        }.collect { relationship ->
-            def endNode = relationship.endNode
-            def endTerm = toTerm(endNode, nodes.getTermDescription(endNode, language))
-            [type: relationship.type.name(), start: startTerm, end: endTerm]
+    List<Map<String, Object>> findAllBroaderTerms(long code, String language) {
+        return findRelatedTerms(code, language, BROADER_TRAVERSAL)
+    }
+
+    private ArrayList findRelatedTerms(long code, String language, TraversalDescription traversal) {
+        def terms = []
+        def startTerm = nodes.getTermByCode(code)
+
+        traversal.traverse(startTerm).each { path ->
+            def last = path.lastRelationship()
+            if (!last) return null
+            def endTerm = path.lastRelationship().endNode
+            def endTermDescription = nodes.findTermDescription(endTerm, language)
+            if (endTermDescription && endTermDescription['status'] == 20) {
+                terms << toTerm(endTerm, endTermDescription)
+
+                // TODO: Temp
+                if (endTermDescription.hasProperty('label')) {
+                    println "${('  ' * path.length())}${LinkType.values().find { it.id == last.type.name() as long }.name() } ${endTermDescription['label']}"
+                }
+            }
         }
+        return terms
+    }
+
+    List<Map<String, Object>> findAllNarrowerTerms(long code, String language) {
+        return findRelatedTerms(code, language, NARROWER_TRAVERSAL)
     }
 
     private List<Map<String, Object>> toTerms(IndexHits<Node> hits, int max) {

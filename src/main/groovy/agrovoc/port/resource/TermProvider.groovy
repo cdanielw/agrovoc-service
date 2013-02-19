@@ -14,5 +14,7 @@ interface TermProvider {
 
     List<Map<String, Object>> findAllWhereWordInLabelStartsWith(LabelQuery query)
 
-    List<Map<String, Object>> getLinksByCode(long code, String language)
+    List<Map<String, Object>> findAllBroaderTerms(long code, String language)
+
+    List<Map<String, Object>> findAllNarrowerTerms(long code, String language)
 }

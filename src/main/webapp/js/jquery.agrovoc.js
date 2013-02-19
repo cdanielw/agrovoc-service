@@ -6,7 +6,9 @@
         this.$element = $(element);
         this.inputName = this.$element.attr('name');
         this.$element.removeAttr('name');
-        this.$termsElement = this.insertTermsElement();
+        this.$selectedTermsElement = this.insertSelectedTermsElement();
+        this.$suggestedTermsElement = this.insertSuggestedTermsElement();
+        this.$inputsElement = this.insertInputsElement();
         this.options = $.extend({}, $.fn.agrovoc.defaults, options);
         this.url = this.options.url;
         this.$element.typeahead($.extend({
@@ -32,20 +34,110 @@
                 agrovoc.addTerms(data)
             })
         },
-        addTerm: function (term) {
+        removeTerm: function (term) {
+            $.grep(this.terms, function () {
+                return this.code != term.code;
+            });
+            this.$selectedTermsElement.children().each(function () {
+                var $item = $(this);
+                if ($item.data('code') == term.code) {
+                    $item.remove();
+                    return false;
+                }
+            });
+            this.$inputsElement.children('input').each(function () {
+                var $input = $(this);
+                if ($input.val() == term.code) {
+                    $input.remove();
+                    return false;
+                }
+            });
+        },
+        selectTerm: function (term) {
+            if (this.isTermAlreadySelected(term)) return false;
+            var $item = $('<li class="agrovoc-term" data-code="' + term.code + '">'
+                + '<i class="icon-remove-sign icon-white"></i><span>' + term.label
+                + '</span></li>');
+            this.appendTermListItem(term, this.$selectedTermsElement, $item);
+
+            var agrovoc = this;
+            $item.click(function (event) {
+                event.preventDefault();
+                agrovoc.removeTerm(term);
+                return false;
+            });
+            this.$inputsElement.append('<input type="hidden" name="' + this.inputName + '" value="' + term.code + '"/>');
             this.terms.push(term);
-            this.$termsElement.append('<li>' + term.label + '</li>');
-            this.$element.after('<input type="hidden" name="' + this.inputName + '" value="' + term.code + '"/>');
-            this.terms.push(term);
+        },
+        addSuggestedTerm: function (term) {
+            var $item = $('<li class="agrovoc-term" data-code="' + term.code + '">'
+                + '<i class="icon-plus-sign icon-white"></i><span>' + term.label
+                + '</span></li>');
+
+            var agrovoc = this;
+            $item.click(function (event) {
+                event.preventDefault();
+                $item.remove();
+                agrovoc.selectTerm(term);
+                return false;
+            });
+            this.appendTermListItem(term, this.$suggestedTermsElement, $item);
+        },
+        isTermAlreadySelected: function (term) {
+            var termAdded = false;
+            $.each(this.terms, function () {
+                if (this.code == term.code) {
+                    termAdded = true;
+                    return false;
+                }
+            });
+            return termAdded;
+        },
+        appendTermListItem: function (term, $parentElement, $item) {
+            $item.css('cursor', 'pointer');
+            var $itemToInsertBefore = this.findTermListItemToInsertBefore(term, $parentElement);
+            if ($itemToInsertBefore != null) {
+                $($item)
+                    .hide()
+                    .css('opacity', 0.0)
+                    .insertBefore($itemToInsertBefore)
+                    .slideDown('fast')
+                    .animate({ opacity: 1.0, duration: 'fast' })
+            } else {
+                $($item)
+                    .hide()
+                    .css('opacity', 0.0)
+                    .appendTo($parentElement)
+                    .slideDown('fast')
+                    .animate({ opacity: 1.0, duration: 'fast' });
+            }
+        },
+        findTermListItemToInsertBefore: function (term, $parentElement) {
+            var $itemToInsertBefore = null;
+            $parentElement.children().each(function (i, item) {
+                var $item = $(item);
+                var label = $item.find('span').text();
+                if (label.toLowerCase() > term.label.toLowerCase()) {
+                    $itemToInsertBefore = $item;
+                    return false;
+                }
+            });
+            return $itemToInsertBefore;
         },
         addTerms: function (terms) {
             var agrovoc = this;
             $.each(terms, function (i, term) {
-                agrovoc.addTerm(term);
+                agrovoc.selectTerm(term);
             });
         },
-        insertTermsElement: function () {
-            return $('<ul class="agrovoc-terms"></ul>').insertAfter(this.$element);
+        insertSelectedTermsElement: function () {
+            return $('<ul class="inline selected-agrovoc-terms"></ul>').insertAfter(this.$element);
+        },
+        insertSuggestedTermsElement: function () {
+            return $('<ul class="inline suggested-agrovoc-terms"></ul>').insertAfter(this.$element);
+        },
+        insertInputsElement: function () {
+            return $('<div class="agrovoc-hidden"></ul>').insertAfter(this.$element);
         },
         findAllTerms: function (query, startsWith) {
             return $.getJSON(this.options.url + '/term/find', {
@@ -56,6 +148,9 @@
         },
         findTermByLabel: function (label) {
             return $.getJSON(this.options.url + '/term/label/' + label, { language: this.options.language });
+        },
+        isTermDescriptor: function (term) {
+            return term.status == 20;
         },
         source: function (query, process) {
             var agrovoc = this.options.agrovoc;
@@ -83,6 +178,10 @@
                 });
         },
         highlighter: function (label) {
+            var agrovoc = this.options.agrovoc;
+            var term = agrovoc.termsByLabel[label];
+            if (!agrovoc.isTermDescriptor(term))
+                return '<span class="muted">' + label + '</span>';
             return label;
         },
         matcher: function (label) {
@@ -92,7 +191,19 @@
             return labels;
         },
         updater: function (label) {
-            this.options.agrovoc.addTerm(this.options.agrovoc.termsByLabel[label]);
+            var agrovoc = this.options.agrovoc;
+            var term = agrovoc.termsByLabel[label];
+            if (agrovoc.isTermDescriptor(term))
+                agrovoc.selectTerm(term); // TODO: Handle case where non-term descriptor is selected
+            var url = term.links.broader;
+            $.getJSON(url).done(function (broaderTerms) {
+                agrovoc.$suggestedTermsElement.remove();
+                agrovoc.$suggestedTermsElement = agrovoc.insertSuggestedTermsElement();
+                $.each(broaderTerms, function (i, t) {
+                    agrovoc.addSuggestedTerm(t);
+                });
+            });
+
             return '';
         }
     };
@@ -141,5 +252,4 @@
         });
     });
 
-}
-    (window.jQuery);
+}(window.jQuery);

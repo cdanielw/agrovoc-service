@@ -53,16 +53,21 @@ class TermResource {
     }
 
     @GET
-    @Path("/{code}/links")
+    @Path("/{code}/broader")
     @Produces('application/json')
-    String links(@PathParam('code') long code,
-                 @QueryParam('language') String language) {
-        def links = termProvider.getLinksByCode(code, language ?: 'EN')
-        links.each {
-            addTermLinks(it.start)
-            addTermLinks(it.end)
-        }
-        JsonOutput.toJson(links)
+    String broader(@PathParam('code') long code,
+                   @QueryParam('language') String language) {
+        def terms = termProvider.findAllBroaderTerms(code, language ?: 'EN')
+        termsToJson(terms)
+    }
+
+    @GET
+    @Path("/{code}/narrower")
+    @Produces('application/json')
+    String narrower(@PathParam('code') long code,
+                   @QueryParam('language') String language) {
+        def terms = termProvider.findAllNarrowerTerms(code, language ?: 'EN')
+        termsToJson(terms)
     }
 
     @GET
@@ -80,19 +85,20 @@ class TermResource {
     }
 
     private String termToJson(term) {
-        addTermLinks(term)
+        addLinks(term)
         JsonOutput.toJson(term)
     }
 
     private String termsToJson(terms) {
-        terms.each { addTermLinks(it) }
+        terms.each { addLinks(it) }
         JsonOutput.toJson(terms)
     }
 
-    private void addTermLinks(term) {
+    private void addLinks(term) {
         def links = [
                 self: "${ui.baseUri}term/$term.code?language=$term.language",
-                links: "${ui.baseUri}term/$term.code/links?language=$term.language"
+                broader: "${ui.baseUri}term/$term.code/broader?language=$term.language",
+                narrower: "${ui.baseUri}term/$term.code/narrower?language=$term.language"
         ]
         term.links = links
     }

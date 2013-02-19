@@ -82,7 +82,11 @@ class TermService implements AgrovocTermPollingJob, TermEventPublisher, TermProv
         termRepository.findAllWhereWordInLabelStartsWith(query)
     }
 
-    List<Map<String, Object>> getLinksByCode(long code, String language) {
-        termRepository.getLinksByCode(code, language)
+    List<Map<String, Object>> findAllBroaderTerms(long code, String language) {
+        termRepository.findAllBroaderTerms(code, language)
+    }
+
+    List<Map<String, Object>> findAllNarrowerTerms(long code, String language) {
+        termRepository.findAllNarrowerTerms(code, language)
     }
 }

@@ -119,7 +119,7 @@ class Neo4jTermRepository_IntegrationTest extends Specification {
         persister.persistLinks(new TermLinks(startTermCode: term1.code).add(term2.code, 20))
 
         when:
-        def result = repository.getLinksByCode(term1.code, 'EN')
+        def result = repository.findAllBroaderTerms(term1.code, 'EN')
 
         then:
         result.size() == 1
@@ -133,14 +133,14 @@ class Neo4jTermRepository_IntegrationTest extends Specification {
         persister.persistTerm(term1)
         persister.persistTerm(term2)
         persister.persistLinks(new TermLinks(startTermCode: term1.code).add(term2.code, 20))
-        assert repository.getLinksByCode(term1.code, 'EN').first().type == '20'
+        assert repository.findAllBroaderTerms(term1.code, 'EN').first().type == '20'
 
         when:
         persister.persistLinks(new TermLinks(startTermCode: term1.code).add(term2.code, 60))
 
 
         then:
-        def result = repository.getLinksByCode(term1.code, 'EN')
+        def result = repository.findAllBroaderTerms(term1.code, 'EN')
         result.size() == 1
         result.first().type == '60'
     }
@@ -153,7 +153,7 @@ class Neo4jTermRepository_IntegrationTest extends Specification {
         persister.persistLinks(new TermLinks(startTermCode: term1.code).add(term2.code, 20))
 
         when:
-        def result = repository.getLinksByCode(term1.code, 'FR')
+        def result = repository.findAllBroaderTerms(term1.code, 'FR')
 
         then:
         result.size() == 1
@@ -169,7 +169,7 @@ class Neo4jTermRepository_IntegrationTest extends Specification {
         persister.persistLinks(new TermLinks(startTermCode: term1.code).add(term2.code, 20))
 
         when:
-        def result = repository.getLinksByCode(term1.code, 'EN')
+        def result = repository.findAllBroaderTerms(term1.code, 'EN')
 
         then:
         result.empty
