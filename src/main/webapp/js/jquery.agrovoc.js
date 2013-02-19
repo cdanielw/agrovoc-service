@@ -1,8 +1,20 @@
 !function ($) {
-    /* AGROVOC PUBLIC CLASS DEFINITION
-     * ================================= */
+    /* AGROVOC DISPLAY PUBLIC CLASS DEFINITION
+     * ======================================= */
 
-    var Agrovoc = function (element, options) {
+    var AgrovocDisplay = function (element, options) {
+        this.$element = $(element);
+        this.terms = [];
+    };
+
+    AgrovocDisplay.prototype = {
+        constructor: AgrovocDisplay
+    }
+
+    /* AGROVOC SELECTOR PUBLIC CLASS DEFINITION
+     * ======================================== */
+
+    var AgrovocSelector = function (element, options) {
         this.$element = $(element);
         this.inputName = this.$element.attr('name');
         this.$element.removeAttr('name');
@@ -25,8 +37,8 @@
         this.loadTerms();
     };
 
-    Agrovoc.prototype = {
-        constructor: Agrovoc,
+    AgrovocSelector.prototype = {
+        constructor: AgrovocSelector,
         loadTerms: function () {
             if (!this.options.codes) return;
             var codes = this.options.codes ? $.parseJSON('[' + this.options.codes + ']') : [];
@@ -231,7 +243,12 @@
             var $this = $(this),
                 data = $this.data('agrovoc'),
                 options = typeof option == 'object' && option;
-            if (!data) $this.data('agrovoc', (data = new Agrovoc(this, options)));
+            if (!data) {
+                if ($this.is("input"))
+                    $this.data('agrovoc', (data = new AgrovocSelector(this, options)));
+                else
+                    $this.data('agrovoc', (data = new AgrovocDisplay(this, options)));
+            }
             if (typeof option == 'string') data[option]()
         })
     };
@@ -241,7 +258,7 @@
         language: 'EN'
     };
 
-    $.fn.agrovoc.Constructor = Agrovoc;
+    $.fn.agrovoc.Constructor = AgrovocSelector;
 
 
     /* AGROVOC NO CONFLICT

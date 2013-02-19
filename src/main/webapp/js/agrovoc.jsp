@@ -23,6 +23,10 @@
             font-weight: bold;
         }
 
+        input.search-query {
+            margin-bottom: 9px;
+        }
+
         ul.selected-agrovoc-terms li.agrovoc-term {
             background-color: #3a87ad;
         }
@@ -39,18 +43,33 @@
 </head>
 <body>
 <div class="container">
-    <h1>Agrovoc service test</h1>
 
-    <form action="agrovoc.jsp" method="get">
-        <label for="terms"> Query: </label>
+    <form action="agrovoc.jsp" method="get" class="form-horizontal">
+        <fieldset>
+            <legend>Agrovoc example</legend>
+            <div class="control-group">
+                <div class="control-label">Submitted terms</div>
 
-        <input id="terms" name="terms" type="text" autocomplete="off"
-               data-provide="agrovoc"
-               data-url="http://168.202.48.143:8080/agrovoc"
-               data-codes="${fn:join(paramValues['terms'],', ')}">
+                <div class="controls">
+                    <ul data-provide="agrovoc"
+                        data-codes="${fn:join(paramValues['terms'],', ')}"
+                        data-url="http://168.202.48.143:8080/agrovoc"></ul>
+                </div>
+            </div>
+            <div class="control-group">
+                <label class="control-label" for="terms">Terms</label>
 
-        <input type="submit" value="Submit">
+                <div class="controls">
+                    <input id="terms" name="terms" type="text" autocomplete="off"
+                           placeholder="Type something..."
+                           data-provide="agrovoc"
+                           data-codes="${fn:join(paramValues['terms'],', ')}"
+                           data-url="http://168.202.48.143:8080/agrovoc">
 
+                    <input type="submit" value="Submit" class="btn">
+                </div>
+            </div>
+        </fieldset>
     </form>
 </div>
 </body>
