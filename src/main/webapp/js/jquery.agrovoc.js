@@ -111,7 +111,10 @@
             return termAdded;
         },
         appendTermListItem: function (term, $parentElement, $item) {
-            $item.css('cursor', 'pointer');
+            $item
+                .attr('unselectable', 'on')
+                .css('user-select', 'none')
+                .css('cursor', 'pointer');
             var $itemToInsertBefore = this.findTermListItemToInsertBefore(term, $parentElement);
             if ($itemToInsertBefore != null) {
                 $($item)
