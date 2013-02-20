@@ -1,0 +1,29 @@
+li.agrovoc-term {
+    -webkit-border-radius: 9px;
+    -moz-border-radius: 9px;
+    border-radius: 9px;
+    margin: 2px 4px;
+    height: 20px;
+    line-height: 20px;
+    color: white;
+    font-size: 12px;
+    font-weight: bold;
+    behavior: url(../css/PIE.htc);
+}
+
+input#terms {
+    margin-bottom: 9px;
+}
+
+ul.selected-agrovoc-terms li.agrovoc-term {
+    background-color: #3a87ad;
+}
+
+ul.suggested-agrovoc-terms li.agrovoc-term {
+    background-color: #d3d3d3;
+}
+
+li.agrovoc-term span {
+    padding: 0 4px;
+    white-space: nowrap;
+}
