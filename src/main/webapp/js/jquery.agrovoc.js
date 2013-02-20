@@ -1,25 +1,13 @@
 !function ($) {
-    /* AGROVOC DISPLAY PUBLIC CLASS DEFINITION
-     * ======================================= */
-
-    var AgrovocDisplay = function (element, options) {
-        this.$element = $(element);
-        this.terms = [];
-    };
-
-    AgrovocDisplay.prototype = {
-        constructor: AgrovocDisplay
-    }
-
     /* AGROVOC SELECTOR PUBLIC CLASS DEFINITION
      * ======================================== */
 
-    var AgrovocSelector = function (element, options) {
+    var Agrovoc = function (element, options) {
         this.$element = $(element);
         this.inputName = this.$element.attr('name');
         this.$element.removeAttr('name');
         this.$selectedTermsElement = this.insertSelectedTermsElement();
-        this.$suggestedTermsElement = this.insertSuggestedTermsElement();
+        this.$suggestedTerms = this.insertSuggestedTermsElement();
         this.$inputsElement = this.insertInputsElement();
         this.options = $.extend({}, $.fn.agrovoc.defaults, options);
         this.url = this.options.url;
@@ -37,8 +25,8 @@
         this.loadTerms();
     };
 
-    AgrovocSelector.prototype = {
-        constructor: AgrovocSelector,
+    Agrovoc.prototype = {
+        constructor: Agrovoc,
         loadTerms: function () {
             if (!this.options.codes) return;
             var codes = this.options.codes ? $.parseJSON('[' + this.options.codes + ']') : [];
@@ -98,7 +86,7 @@
                 agrovoc.$element.focus();
                 return false;
             });
-            this.appendTermListItem(term, this.$suggestedTermsElement, $item);
+            this.appendTermListItem(term, this.$suggestedTerms, $item);
         },
         isTermAlreadySelected: function (term) {
             var termAdded = false;
@@ -176,8 +164,8 @@
             query = $.trim(query);
             if (query.length == 0) return false;
             var agrovoc = this.options.agrovoc;
-            agrovoc.$suggestedTermsElement.remove();
-            agrovoc.$suggestedTermsElement = agrovoc.insertSuggestedTermsElement();
+            agrovoc.$suggestedTerms.remove();
+            agrovoc.$suggestedTerms = agrovoc.insertSuggestedTermsElement();
             $.when(
                     agrovoc.findTermByLabel(query),
                     agrovoc.findAllTerms(query, true),
@@ -224,8 +212,8 @@
                 agrovoc.selectTerm(term); // TODO: Handle case where non-term descriptor is selected
             var url = term.links.broader + '&callback=?';
             $.getJSON(url).done(function (broaderTerms) {
-                agrovoc.$suggestedTermsElement.remove();
-                agrovoc.$suggestedTermsElement = agrovoc.insertSuggestedTermsElement();
+                agrovoc.$suggestedTerms.remove();
+                agrovoc.$suggestedTerms = agrovoc.insertSuggestedTermsElement();
                 $.each(broaderTerms, function (i, t) {
                     agrovoc.addSuggestedTerm(t);
                 });
@@ -247,10 +235,7 @@
                 data = $this.data('agrovoc'),
                 options = typeof option == 'object' && option;
             if (!data) {
-                if ($this.is("input"))
-                    $this.data('agrovoc', (data = new AgrovocSelector(this, options)));
-                else
-                    $this.data('agrovoc', (data = new AgrovocDisplay(this, options)));
+                    $this.data('agrovoc', (data = new Agrovoc(this, options)));
             }
             if (typeof option == 'string') data[option]()
         })
@@ -261,7 +246,7 @@
         language: 'EN'
     };
 
-    $.fn.agrovoc.Constructor = AgrovocSelector;
+    $.fn.agrovoc.Constructor = Agrovoc;
 
 
     /* AGROVOC NO CONFLICT
