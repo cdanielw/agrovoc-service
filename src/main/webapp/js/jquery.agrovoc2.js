@@ -3,8 +3,8 @@
     var Agrovoc = function (element, options) {
         this.options = $.extend({}, $.fn.agrovoc.defaults, options);
         this.termAddedListeners = [];
+        this.termRemovedListeners = [];
         this.terms = [];
-        this.termsByCode = {};
         this.$element = $(element);
         var component;
         if (this.$element.is('input'))
@@ -33,17 +33,15 @@
             this.renderTerms(terms, $terms);
             var that = this;
             $.each(terms, function (i, term) {
-                that.termsByCode[term.code] = term;
-                that.notifyTermAddedListeners(term, $terms);
+                that.notifyListeners(term, that.termAddedListeners);
             });
         },
 
         addTerm: function (term) {
             if (this.isTermAlreadyAdded(term)) return;
             this.terms.push(term);
-            this.termsByCode[term.code] = term;
             this.renderTerm(term, this.$selectedTerms);
-            this.notifyTermAddedListeners(term);
+            this.notifyListeners(term, this.termAddedListeners);
         },
 
         isTermAlreadyAdded: function (term) {
@@ -60,19 +58,18 @@
             this.terms = $.grep(this.terms, function (t) {
                 return t.code != term.code;
             });
-            this.termsByCode[term.code] = null;
-            this.$selectedTerms.children().each(function () {
-                var $item = $(this);
-                if ($item.data('code') == term.code) {
-                    $item.remove();
-                    return false;
-                }
+            this.removeRenderedTerm(term, this.$selectedTerms);
+            this.notifyListeners(term, this.termRemovedListeners);
+        },
+
+        removeRenderedTerm: function (term, $terms) {
+            this.removeChild($terms, function ($item) {
+                return $item.data('code') == term.code;
             });
         },
 
-        notifyTermAddedListeners: function (term) {
-            var that = this;
-            $.each(this.termAddedListeners, function (i, termListener) {
+        notifyListeners: function (term, listeners) {
+            $.each(listeners, function (i, termListener) {
                 termListener(term);
             });
         },
@@ -99,14 +96,18 @@
         },
 
         renderTerm: function (term, $terms) {
-            var $selectedTerm = $(this.termTemplate);
-            $selectedTerm.attr('data-code', term.code);
-            $selectedTerm.find('.agrovoc-term-label').text(term.label);
+            var $term = $(this.termTemplate);
+            $term.data('term', term);
+            $term.attr('data-code', term.code);
+            $term.find('.agrovoc-term-label').text(term.label);
             var $itemToInsertBefore = this.findTermListItemToInsertBefore(term, $terms);
+
+            $term.css('opacity', 0.0);
             if ($itemToInsertBefore)
-                $selectedTerm.insertBefore($itemToInsertBefore);
+                $term.insertBefore($itemToInsertBefore);
             else
-                $terms.append($selectedTerm);
+                $terms.append($term);
+            $term.animate({ opacity: 1.0, duration: 50 });
         },
 
         findTermListItemToInsertBefore: function (term, $parentElement) {
@@ -120,14 +121,25 @@
                 }
             });
             return $itemToInsertBefore;
+        },
+
+        removeChild: function ($items, callback) {
+            $items.children().each(function () {
+                var $item = $(this);
+                if (callback($item)) {
+                    $item.remove();
+                    return false;
+                }
+            });
         }
     };
 
     var Selector = function ($element, agrovoc) {
         this.agrovoc = agrovoc;
-        this.$suggestedTerms = this.initSuggestedTermsSelector();
-        this.$selectedTerms = this.initSelectedTermsSelector(this.$suggestedTerms);
-        this.$hiddenInputs = this.initInputSelector();
+        this.$suggestedTerms = this.initSuggestedTerms();
+        this.$selectedTerms = this.initSelectedTerms(this.$suggestedTerms);
+        this.$hiddenInputs = this.initHiddenInputs();
+        this.inputName = this.initInputName();
         this.termsByLabel = {};
         this.createTypeahead($element);
         this.listen();
@@ -141,17 +153,20 @@
             this.agrovoc.termAddedListeners.push(function (term) {
                 that.termAdded(term)
             });
+            this.agrovoc.termRemovedListeners.push(function (term) {
+                that.termRemoved(term)
+            });
             this.$selectedTerms.on('click', '.agrovoc-term', function (event) {
                 event.preventDefault();
-                var code = $(this).data('code');
-                var term = that.agrovoc.termsByCode[code];
+                var term = $(this).data('term');
+                that.agrovoc.removeTerm(term);
                 that.agrovoc.renderTerm(term, that.$suggestedTerms);
             });
             this.$suggestedTerms.on('click', '.agrovoc-term', function (event) {
                 event.preventDefault();
-                var code = $(this).data('code');
-                var term = that.agrovoc.termsByCode[code];
+                var term = $(this).data('term');
                 that.agrovoc.addTerm(term);
+                that.agrovoc.removeRenderedTerm(term, that.$suggestedTerms);
             });
         },
 
@@ -166,7 +181,7 @@
             return template;
         },
 
-        initSelectedTermsSelector: function ($suggestedTerms) {
+        initSelectedTerms: function ($suggestedTerms) {
             var $selectedTerms = $(this.agrovoc.options.$selectedTerms);
             if ($selectedTerms.length == 0) {
                 $selectedTerms = $('<ul class="inline selected-agrovoc-terms"></ul>')
@@ -179,7 +194,7 @@
             return $selectedTerms
         },
 
-        initSuggestedTermsSelector: function () {
+        initSuggestedTerms: function () {
             var $suggestedTerms = $(this.agrovoc.options.$suggestedTerms);
             if ($suggestedTerms.length == 0) {
                 $suggestedTerms = $('<ul class="inline suggested-agrovoc-terms"></ul>')
@@ -193,8 +208,14 @@
         },
 
 
-        initInputSelector: function () {
-            return $('<div class="agrovoc-hidden"></div>').insertAfter(this.$element);
+        initHiddenInputs: function () {
+            return $('<div class="agrovoc-hidden"></div>').insertAfter(this.agrovoc.$element);
+        },
+
+        initInputName: function () {
+            var inputName = this.agrovoc.$element.attr('name');
+            this.agrovoc.$element.removeAttr('name');
+            return  inputName;
         },
 
         createTypeahead: function ($element) {
@@ -284,6 +305,12 @@
             this.$hiddenInputs.append('<input type="hidden" name="' + this.inputName + '" value="' + term.code + '"/>');
         },
 
+        termRemoved: function (term) {
+            this.agrovoc.removeChild(this.$hiddenInputs, function ($item) {
+                return parseInt($item.val()) == term.code;
+            });
+        },
+
         isTermDescriptor: function (term) {
             return term.status == 20;
         },
@@ -307,7 +334,7 @@
 
     var Displayer = function ($element, agrovoc) {
         this.agrovoc = agrovoc;
-        this.$selectedTerms = this.initSelectedTermsSelector();
+        this.$selectedTerms = this.initSelectedTerms();
     };
 
     Displayer.prototype = {
@@ -323,7 +350,7 @@
             return template;
         },
 
-        initSelectedTermsSelector: function () {
+        initSelectedTerms: function () {
             return this.agrovoc.$element;
         }
     };

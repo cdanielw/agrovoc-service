@@ -44,7 +44,7 @@
 <body>
 <div class="container">
 
-    <form action="agrovoc.jsp" method="get" class="form-horizontal">
+    <form action="agrovoc2.jsp" method="get" class="form-horizontal">
         <fieldset>
             <legend>Agrovoc example</legend>
             <div class="control-group">
