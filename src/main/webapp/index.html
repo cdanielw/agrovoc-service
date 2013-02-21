@@ -202,6 +202,7 @@
            data-codes=""
            data-hits="8"
            data-suggestions="20"
+           data-language="EN"
            data-url="http://168.202.48.143:8080/agrovoc">
 </div>
 
@@ -212,6 +213,7 @@
        data-hits="8"
        data-suggestions="20"
        data-suggest="synonyms, broader"
+       data-language="EN"
        data-url="http://168.202.48.143:8080/agrovoc"&gt;
 </pre>
 
@@ -254,8 +256,14 @@
         </td>
     </tr>
     <tr>
+        <td>language</td>
+        <td>string</td>
+        <td>EN</td>
+        <td>The ISO2 language to render terms in.</td>
+    </tr>
+    <tr>
         <td>url</td>
-        <td>url</td>
+        <td>string</td>
         <td>http://168.202.48.143:8080/agrovoc</td>
         <td>The URL to the JSONP service.</td>
     </tr>
@@ -389,12 +397,14 @@
     <div class="bs-docs-example">
         <ul data-provide="agrovoc"
             data-codes="36390, 4669"
+            data-language="EN"
             data-url="http://168.202.48.143:8080/agrovoc"></ul>
     </div>
 
 <pre class="prettyprint linenums">
 &lt;ul data-provide="agrovoc"
     data-codes="36390, 4669"
+    data-language="EN"
     data-url="http://168.202.48.143:8080/agrovoc"&gt;&lt;/ul&gt;
 </pre>
 
@@ -415,8 +425,14 @@
             <td>A comma separated list of Agrovoc term codes to render.</td>
         </tr>
         <tr>
+            <td>language</td>
+            <td>string</td>
+            <td>EN</td>
+            <td>The ISO2 language to render terms in.</td>
+        </tr>
+        <tr>
             <td>url</td>
-            <td>url</td>
+            <td>string</td>
             <td>http://168.202.48.143:8080/agrovoc</td>
             <td>The URL to the JSONP service.</td>
         </tr>
@@ -476,6 +492,60 @@
     <div class="page-header">
         <h2>JSONP service</h2>
     </div>
+
+    <p>Like the name suggests, the service providing Agrovoc terms to the jQuery plug-in uses
+        <a href="http://en.wikipedia.org/wiki/JSONP">JSONP</a>. The reason for that is to get around the
+        <a href="http://en.wikipedia.org/wiki/Same_origin_policy">same origin policy</a>.</p>
+
+    <h3>End points</h3>
+
+    <p>The below end points only responds to <code>GET</code> and all expect a
+        query parameter named <code>callback</code>, containing the JavaScript callback function name to use when
+        rendering the JSONP representation. All end points also support an optional query parameter named
+        <code>language</code>, containing the ISO2 code of the language which to
+        render the representation in.</p>
+
+    <p>All successful requests will return JSONP with a content type of
+        <code>application/javascript</code>.</p>
+
+    // TODO: Find examples of this type of documentations.
+    <table class="table table-bordered table-striped">
+        <thead>
+        <tr>
+            <th>URL</th>
+            <th>Description</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td>/term?code[]={codes}</td>
+            <td>Returns the terms with the provided codes.
+                If there for one of the provided codes exist no term, the request fails with a <code>404</code> .
+            </td>
+        </tr>
+        <tr>
+            <td>/term/{code}</td>
+            <td>Returns the term with the provided code.
+                If there exist no term with the provided code, the request fails with a <code>404</code> .
+            </td>
+        </tr>
+        <tr>
+            <td>/term/{code}/related?types={types}&max={max}</td>
+            <td>Returns terms related to the term with the code {code} through relation types {types}.
+                Valid values of {types} are synonyms, broader, narrower.
+                The number of terms returned is limited to {max}.
+                If there exist no term with the the code {code}, the request fails with a <code>404</code>.
+            </td>
+        </tr>
+        <tr>
+            <td>/term/label/{label}</td>
+            <td>Returns a single term with the provided label.
+                If there exist no term with the provided label, the request fails with a <code>404</code> .
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
 </section>
 
 </div>
