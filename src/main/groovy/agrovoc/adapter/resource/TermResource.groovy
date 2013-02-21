@@ -25,7 +25,7 @@ class TermResource {
 
     @GET
     @Path("/{code}")
-    @Produces('application/x-javascript')
+    @Produces('application/javascript')
     String termByCode(@PathParam('code') long code,
                       @QueryParam('language') String language) {
         def term = termProvider.getByCode(code, language ?: 'EN')
@@ -34,7 +34,7 @@ class TermResource {
 
     @GET
     @Path("/label/{label}")
-    @Produces('application/x-javascript')
+    @Produces('application/javascript')
     String termByLabel(@PathParam('label') String label,
                        @QueryParam('language') String language) {
         def term = termProvider.findByLabel(label, language ?: 'EN')
@@ -43,7 +43,7 @@ class TermResource {
     }
 
     @GET
-    @Produces('application/x-javascript')
+    @Produces('application/javascript')
     String terms(@QueryParam('code[]') List<Long> codes,
                  @QueryParam('language') String language) {
         // TODO: Make more efficient
@@ -55,7 +55,7 @@ class TermResource {
 
     @GET
     @Path("/{code}/broader")
-    @Produces('application/x-javascript')
+    @Produces('application/javascript')
     String broader(@PathParam('code') long code,
                    @QueryParam('language') String language) {
         def terms = termProvider.findAllBroaderTerms(code, language ?: 'EN')
@@ -64,7 +64,7 @@ class TermResource {
 
     @GET
     @Path("/{code}/narrower")
-    @Produces('application/x-javascript')
+    @Produces('application/javascript')
     String narrower(@PathParam('code') long code,
                     @QueryParam('language') String language) {
         def terms = termProvider.findAllNarrowerTerms(code, language ?: 'EN')
@@ -73,7 +73,7 @@ class TermResource {
 
     @GET
     @Path("/find")
-    @Produces('application/x-javascript')
+    @Produces('application/javascript')
     String find(@QueryParam('startsWith') boolean startsWith,
                 @QueryParam('q') String query,
                 @QueryParam('language') String language,

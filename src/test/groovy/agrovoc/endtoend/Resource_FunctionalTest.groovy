@@ -1,18 +1,24 @@
 package agrovoc.endtoend
+
 import agrovoc.dto.Term
 import agrovoc.dto.TermDescription
+import groovy.json.JsonSlurper
 import groovyx.net.http.RESTClient
 import spock.lang.Shared
 import spock.lang.Specification
+
 /**
  * @author Daniel Wiell
  */
 class Resource_FunctionalTest extends Specification {
-    @Shared def service = new AgrovocService()
-    def client = new RESTClient("${AgrovocService.BASE_URI}/")
+    @Shared
+    def service = new AgrovocService()
+    RESTClient client
 
     def setup() {
         service.init()
+        client = new RESTClient("${AgrovocService.BASE_URI}/")
+        client.parser.'application/javascript' = client.parser.'text/plain'
     }
 
     def cleanup() {
@@ -29,7 +35,7 @@ class Resource_FunctionalTest extends Specification {
         service.createTerm(createTerm(code, [EN: expectedLabel]))
 
         when:
-        def result = client.get(path: "term/$code").data
+        def result = getJson("term/$code")
 
         then: result.label == expectedLabel
     }
@@ -43,7 +49,7 @@ class Resource_FunctionalTest extends Specification {
         ])
 
         when:
-        def result = client.get(path: "term/find", query: [q: query]).data
+        def result = getJson("term/find", [q: query])
 
         then:
         result.size() == 1
@@ -59,7 +65,7 @@ class Resource_FunctionalTest extends Specification {
         ])
 
         when:
-        def result = client.get(path: "term/find", query: [q: query, startsWith: true]).data
+        def result = getJson("term/find", [q: query, startsWith: true])
 
         then:
         result.size() == 1
@@ -73,7 +79,7 @@ class Resource_FunctionalTest extends Specification {
         ])
 
         when:
-        def result = client.get(path: "term", query: ['code[]': [123, 456]]).data
+        def result = getJson("term", ['code[]': [123, 456]])
 
         then:
         result.size() == 2
@@ -85,9 +91,17 @@ class Resource_FunctionalTest extends Specification {
         service.createTerm(term)
 
         when:
-        def result = client.get(path: "term/label/$label").data
+        def result = getJson("term/label/$label")
 
         then: result.code == term.code
+    }
+
+    def getJson(String path, Map query = [:]) {
+        query.callback = 'jsonpCallback'
+        def jsonp = client.get(path: path,
+                query: query).data.text as String
+        String json = jsonp.find(~/jsonpCallback\((.*)\)/) { match, json -> json }
+        new JsonSlurper().parseText(json)
     }
 
     private Term createTerm(long code, Map<String, String> labelByLanguage) {
