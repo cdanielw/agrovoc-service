@@ -6,30 +6,49 @@
     <title>Agrovoc term selector</title>
     <link href="css/css3pie-bootstrap.css" rel="stylesheet">
     <link href="css/prettify.css" rel="stylesheet">
-    <link href="css/docs.css" rel="stylesheet">
     <link href="css/bootstrap.css" rel="stylesheet">
+    <link href="css/docs.css" rel="stylesheet">
     <link href="css/agrovoc.css" rel="stylesheet">
+    <!--[if lt IE 9]>
+    <script src="js/html5shiv.js"></script>
+    <![endif]-->
 </head>
-<body onload="prettyPrint()">
+<body onload="prettyPrint()" data-spy="scroll" data-target=".bs-docs-sidebar">
 <div class="container">
-    <div class="hero-unit">
-        <h2>Agrovoc term selector</h2>
+<div class="hero-unit">
+    <h2>Agrovoc term selector</h2>
 
-        <p>This is a JSONP serving service and a companioning <a href="http://jquery.com/">jQuery</a> plug-in, used for
-            selecting <a href="http://www.fao.org/agrovoc/">Agrovoc</a> terms. It would typically be used to tag various
-            resources, or select terms to include when searching for resources.</p>
+    <p>This is a JSONP serving service and a companioning <a href="http://jquery.com/">jQuery</a> plug-in, used for
+        selecting <a href="http://www.fao.org/agrovoc/">Agrovoc</a> terms. It would typically be used to tag various
+        resources, or select terms to include when searching for resources.</p>
+</div>
 
+<div class="container">
+<div class="row">
+<div class="span3 bs-docs-sidebar">
+    <ul class="nav nav-list bs-docs-sidenav" data-spy="affix" data-offset-top="310">
+        <li><a href="#gettingStarted"><i class="icon-chevron-right"></i> Getting started</a></li>
+        <li><a href="#api"><i class="icon-chevron-right"></i> Client APIs</a></li>
+        <li><a href="#selectingTerms"><i class="icon-chevron-right"></i> Selecting terms</a></li>
+        <li><a href="#renderingTerms"><i class="icon-chevron-right"></i> Rendering terms</a></li>
+    </ul>
+</div>
+<div class="span9">
+<section id="gettingStarted">
+
+    <div class="page-header">
+        <h2>Getting started </h2>
     </div>
-    <h2>jQuery plug-in</h2>
-
-    <h3>Getting started</h3>
 
     <p>To get this working at all, a couple of JavaScript libraries must be loaded on the page.
-        The <a href="js/jquery.agrovoc.js">plug-in</a> is dependent on <a href="http://jquery.com/">jQuery</a> and
+        The <a href="js/jquery.agrovoc.js">plug-in</a> is dependent on <a
+                href="http://jquery.com/">jQuery</a>
+        and
         the <a href="http://twitter.github.com/bootstrap/javascript.html#typeahead">Typeahead</a> in
         Twitter's <a href="http://twitter.github.com/bootstrap/">Bootstrap</a>.
         So these need to be included, in addition to the plug-in itself.
-        The complete Bootstrap JavaScript library can of course be included instead of only the Typeahead,
+        The complete Bootstrap JavaScript library can of course be included instead of only the
+        Typeahead,
         if more Bootstrap JavaScript components are used on your page. You might want to put the scripts
         at the end of the body, to make the page render faster.</p>
 
@@ -81,12 +100,23 @@
         This tells the plug-in it's a term renderer.
         The <code>data-codes</code> attribute specify the Agrovoc codes to render.</p>
 
-    <h3>Data attribute API vs. Programmatic API</h3>
+</section>
+
+<section id="api">
+
+    <div class="page-header">
+        <h2>Client APIs</h2>
+    </div>
+
 
     <p>
-        The plug-in can be used through two separate APIs. With the Data attribute API, as in the previous section, or
+        The plug-in can be used through two separate APIs. With the Data attribute API, as in the
+        previous
+        section,
+        or
         through a Programmatic API. It follows the convensions used in the Bootstrap
-        <a href="http://twitter.github.com/bootstrap/javascript.html#overview">JavaScript components</a>, so
+        <a href="http://twitter.github.com/bootstrap/javascript.html#overview">JavaScript components</a>,
+        so
         more details can be found there.
     </p>
 
@@ -107,61 +137,131 @@
     $('input#programmaticApiExample').agrovoc();
 &lt;/script&gt;
 </pre>
-
-    <h3>Selecting terms</h3>
-
-    <p>The Getting started section presented a minimal example of a term selector.</p>
-
-    <h4>Example with all configuration options</h4>
-    <h4>Minimal jQuery example</h4>
-    <h4>jQuery example with all configuration options</h4>
-    <h4>Styling</h4>
-    <h4>Configuration options</h4>
-
-    <h3>Displaying terms</h3>
-    <h4>Minimal example</h4>
-    <h4>Example with all configuration options</h4>
-    <h4>Minimal jQuery example</h4>
-    <h4>jQuery example with all configuration options</h4>
-    <h4>Styling</h4>
-    <h4>Configuration options</h4>
+</section>
 
 
-    <h2>Service</h2>
+<section id="selectingTerms">
 
-    <form method="get" class="form-horizontal">
-        <fieldset>
-            <legend>Agrovoc example</legend>
-            <div class="control-group">
-                <div class="control-label">Rendering component</div>
+    <div class="page-header">
+        <h2>Selecting terms</h2>
+    </div>
 
-                <div class="controls">
-                    <ul class="inline selected-agrovoc-terms"
-                        data-provide="agrovoc"
-                        data-codes="36390, 4669"
-                        data-url="http://168.202.48.143:8080/agrovoc"></ul>
-                </div>
-            </div>
-            <hr>
-            <div class="control-group">
-                <label class="control-label" for="terms">Tagging component</label>
+    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam odio tellus, venenatis quis
+        interdum sed, semper ut mauris. Donec blandit placerat mi, et vestibulum sapien laoreet at.
+        Proin vel massa sed ligula tristique pellentesque. Integer quis rutrum dui. Sed malesuada
+        faucibus ligula, at tincidunt tellus consectetur eu. Nulla eu orci et nunc mattis scelerisque
+        sed at elit. Proin odio nunc, pellentesque vitae congue vel, sollicitudin eu nunc. Donec commodo
+        sodales quam, porttitor eleifend ante auctor quis. Vivamus nec sodales urna. Curabitur massa
+        ipsum, tempus laoreet congue eu, viverra non mauris. Maecenas est est, ullamcorper vel imperdiet
+        vel, hendrerit eget mi. Etiam neque dolor, feugiat tincidunt molestie at, molestie at magna.
+        Suspendisse potenti.</p>
 
-                <div class="controls">
-                    <input id="terms" name="terms" type="text"
-                           placeholder="Type something..."
-                           data-provide="agrovoc"
-                           data-codes="36390, 4669"
-                           data-url="http://168.202.48.143:8080/agrovoc">
+    <p>Praesent enim sapien, varius sit amet facilisis vitae, dapibus at orci. Curabitur eget est et
+        enim vehicula placerat. Nunc augue neque, semper sed consectetur vel, sodales et ligula. Donec
+        eu leo felis, semper scelerisque mi. Ut convallis ultrices suscipit. Ut adipiscing, est placerat
+        condimentum ultricies, sapien mauris accumsan massa, at bibendum tellus orci id lorem. Donec
+        diam diam, porttitor dapibus facilisis sed, luctus vel eros. Donec tempus sodales lacus eu
+        accumsan. Quisque mi arcu, pulvinar ut porttitor ac, pulvinar sit amet magna. Integer dignissim
+        augue in ipsum ullamcorper pretium. Curabitur in tellus sem, eu placerat sem. Praesent tincidunt
+        viverra lacus vel placerat.</p>
 
-                    <input type="submit" value="Submit" class="btn">
-                </div>
-            </div>
-        </fieldset>
-    </form>
+    <p>Praesent a tellus sed diam posuere varius. In nec augue sit amet justo dapibus feugiat. Integer
+        laoreet magna sit amet ipsum suscipit eget venenatis libero egestas. Cum sociis natoque
+        penatibus et magnis dis parturient montes, nascetur ridiculus mus. Phasellus ac eleifend ipsum.
+        Nulla blandit fringilla felis ac fringilla. Phasellus facilisis dictum arcu vel auctor. In at
+        arcu leo. Pellentesque ornare tristique turpis sed interdum. Duis condimentum purus quis nunc
+        volutpat vehicula. Sed ornare mollis tincidunt. Donec quam tortor, dictum non faucibus et,
+        ornare vitae erat. Nunc ac orci mauris, eget placerat magna. Maecenas ac elit enim.</p>
+
+    <p>Nam luctus, ipsum in mattis gravida, leo ligula fermentum dolor, in blandit lorem turpis
+        tristique nisi. Maecenas tincidunt, magna sit amet facilisis luctus, elit mi suscipit nisi, a
+        commodo ligula libero eu dui. Sed a lacus nisl, sed suscipit odio. Duis rutrum, felis id mattis
+        volutpat, nunc dui tempus tellus, eu rutrum massa metus sed nibh. Phasellus libero lacus,
+        pretium in porta et, porta ut risus. Sed eros justo, cursus sed porta a, tincidunt rutrum nibh.
+        Nulla facilisi. Morbi eget massa at tortor sodales iaculis. Praesent eu elit sed quam sagittis
+        ornare.</p>
+
+    <p>Duis rutrum convallis quam. Fusce vehicula adipiscing risus, vel volutpat neque sollicitudin
+        quis. Duis non est sit amet diam aliquet semper sed laoreet est. Nullam at lacus nisi, auctor
+        pulvinar libero. Fusce eleifend, nibh eu tincidunt ullamcorper, dui dui gravida lorem, ultricies
+        varius dolor felis et ante. Aenean placerat urna a urna mollis ut hendrerit elit fringilla.
+        Nullam libero lacus, tempus id rutrum at, commodo non quam. Pellentesque eget leo nibh.</p>
+
+</section>
+<section id="renderingTerms">
+
+    <div class="page-header">
+        <h2>Rendering terms</h2>
+    </div>
+
+    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam odio tellus, venenatis quis
+        interdum sed, semper ut mauris. Donec blandit placerat mi, et vestibulum sapien laoreet at.
+        Proin vel massa sed ligula tristique pellentesque. Integer quis rutrum dui. Sed malesuada
+        faucibus ligula, at tincidunt tellus consectetur eu. Nulla eu orci et nunc mattis scelerisque
+        sed at elit. Proin odio nunc, pellentesque vitae congue vel, sollicitudin eu nunc. Donec commodo
+        sodales quam, porttitor eleifend ante auctor quis. Vivamus nec sodales urna. Curabitur massa
+        ipsum, tempus laoreet congue eu, viverra non mauris. Maecenas est est, ullamcorper vel imperdiet
+        vel, hendrerit eget mi. Etiam neque dolor, feugiat tincidunt molestie at, molestie at magna.
+        Suspendisse potenti.</p>
+
+    <p>Praesent enim sapien, varius sit amet facilisis vitae, dapibus at orci. Curabitur eget est et
+        enim vehicula placerat. Nunc augue neque, semper sed consectetur vel, sodales et ligula. Donec
+        eu leo felis, semper scelerisque mi. Ut convallis ultrices suscipit. Ut adipiscing, est placerat
+        condimentum ultricies, sapien mauris accumsan massa, at bibendum tellus orci id lorem. Donec
+        diam diam, porttitor dapibus facilisis sed, luctus vel eros. Donec tempus sodales lacus eu
+        accumsan. Quisque mi arcu, pulvinar ut porttitor ac, pulvinar sit amet magna. Integer dignissim
+        augue in ipsum ullamcorper pretium. Curabitur in tellus sem, eu placerat sem. Praesent tincidunt
+        viverra lacus vel placerat.</p>
+
+    <p>Praesent a tellus sed diam posuere varius. In nec augue sit amet justo dapibus feugiat. Integer
+        laoreet magna sit amet ipsum suscipit eget venenatis libero egestas. Cum sociis natoque
+        penatibus et magnis dis parturient montes, nascetur ridiculus mus. Phasellus ac eleifend ipsum.
+        Nulla blandit fringilla felis ac fringilla. Phasellus facilisis dictum arcu vel auctor. In at
+        arcu leo. Pellentesque ornare tristique turpis sed interdum. Duis condimentum purus quis nunc
+        volutpat vehicula. Sed ornare mollis tincidunt. Donec quam tortor, dictum non faucibus et,
+        ornare vitae erat. Nunc ac orci mauris, eget placerat magna. Maecenas ac elit enim.</p>
+
+    <p>Nam luctus, ipsum in mattis gravida, leo ligula fermentum dolor, in blandit lorem turpis
+        tristique nisi. Maecenas tincidunt, magna sit amet facilisis luctus, elit mi suscipit nisi, a
+        commodo ligula libero eu dui. Sed a lacus nisl, sed suscipit odio. Duis rutrum, felis id mattis
+        volutpat, nunc dui tempus tellus, eu rutrum massa metus sed nibh. Phasellus libero lacus,
+        pretium in porta et, porta ut risus. Sed eros justo, cursus sed porta a, tincidunt rutrum nibh.
+        Nulla facilisi. Morbi eget massa at tortor sodales iaculis. Praesent eu elit sed quam sagittis
+        ornare.</p>
+
+    <p>Duis rutrum convallis quam. Fusce vehicula adipiscing risus, vel volutpat neque sollicitudin
+        quis. Duis non est sit amet diam aliquet semper sed laoreet est. Nullam at lacus nisi, auctor
+        pulvinar libero. Fusce eleifend, nibh eu tincidunt ullamcorper, dui dui gravida lorem, ultricies
+        varius dolor felis et ante. Aenean placerat urna a urna mollis ut hendrerit elit fringilla.
+        Nullam libero lacus, tempus id rutrum at, commodo non quam. Pellentesque eget leo nibh.</p>
+
+</section>
+<!--<h4>Example with all configuration options</h4>-->
+<!--<h4>Minimal jQuery example</h4>-->
+<!--<h4>jQuery example with all configuration options</h4>-->
+<!--<h4>Styling</h4>-->
+<!--<h4>Configuration options</h4>-->
+
+<!--<h3>Displaying terms</h3>-->
+<!--<h4>Minimal example</h4>-->
+<!--<h4>Example with all configuration options</h4>-->
+<!--<h4>Minimal jQuery example</h4>-->
+<!--<h4>jQuery example with all configuration options</h4>-->
+<!--<h4>Styling</h4>-->
+<!--<h4>Configuration options</h4>-->
+
+
+<h2>Service</h2>
+</div>
+</div>
+</div>
 </div>
 <script src="js/jquery.js"></script>
 <script src="js/bootstrap-typeahead.js"></script>
 <script src="js/jquery.agrovoc.js"></script>
+
+<script src="js/bootstrap-affix.js"></script>
+<script src="js/bootstrap-scrollspy.js"></script>
 <script src="js/prettify.js"></script>
 <script type="text/javascript">
     $('input#programmaticApiExample').agrovoc();
