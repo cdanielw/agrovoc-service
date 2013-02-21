@@ -31,6 +31,7 @@
         <li><a href="#api"><i class="icon-chevron-right"></i> Client APIs</a></li>
         <li><a href="#selectingTerms"><i class="icon-chevron-right"></i> Selecting terms</a></li>
         <li><a href="#renderingTerms"><i class="icon-chevron-right"></i> Rendering terms</a></li>
+        <li><a href="#jsonpService"><i class="icon-chevron-right"></i> JSONP service</a></li>
     </ul>
 </div>
 <div class="span9">
@@ -111,13 +112,10 @@
 
     <p>
         The plug-in can be used through two separate APIs. With the Data attribute API, as in the
-        previous
-        section,
-        or
-        through a Programmatic API. It follows the convensions used in the Bootstrap
+        previous section, or through a Programmatic API. It follows the convensions used in the
+        Bootstrap
         <a href="http://twitter.github.com/bootstrap/javascript.html#overview">JavaScript components</a>,
-        so
-        more details can be found there.
+        so more details can be found there.
     </p>
 
     <p>In short, the Data attribute API allows you to use the plug-in without writing any JavaScript.
@@ -126,17 +124,16 @@
     </p>
 
     <div class="bs-docs-example">
-        <input id="programmaticApiExample" type="text"
-               placeholder="Type something...">
+        <ul id="programmaticApiExample"></ul>
     </div>
 <pre class="prettyprint linenums">
-&lt;input id="programmaticApiExample" type="text"
-       placeholder="Type something..."&gt;
+&lt;ul id="programmaticApiExample"&gt;&lt;ul&gt;
 
 &lt;script type="text/javascript"&gt;
-    $('input#programmaticApiExample').agrovoc();
+    $('ul#programmaticApiExample').agrovoc({ codes: [36390, 4669] });
 &lt;/script&gt;
 </pre>
+    <p>The rest of this document will be using the Data attribute API.</p>
 </section>
 
 
@@ -146,47 +143,147 @@
         <h2>Selecting terms</h2>
     </div>
 
-    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam odio tellus, venenatis quis
-        interdum sed, semper ut mauris. Donec blandit placerat mi, et vestibulum sapien laoreet at.
-        Proin vel massa sed ligula tristique pellentesque. Integer quis rutrum dui. Sed malesuada
-        faucibus ligula, at tincidunt tellus consectetur eu. Nulla eu orci et nunc mattis scelerisque
-        sed at elit. Proin odio nunc, pellentesque vitae congue vel, sollicitudin eu nunc. Donec commodo
-        sodales quam, porttitor eleifend ante auctor quis. Vivamus nec sodales urna. Curabitur massa
-        ipsum, tempus laoreet congue eu, viverra non mauris. Maecenas est est, ullamcorper vel imperdiet
-        vel, hendrerit eget mi. Etiam neque dolor, feugiat tincidunt molestie at, molestie at magna.
-        Suspendisse potenti.</p>
+    <!-- TODO: Describe the functions of the widget -->
 
-    <p>Praesent enim sapien, varius sit amet facilisis vitae, dapibus at orci. Curabitur eget est et
-        enim vehicula placerat. Nunc augue neque, semper sed consectetur vel, sodales et ligula. Donec
-        eu leo felis, semper scelerisque mi. Ut convallis ultrices suscipit. Ut adipiscing, est placerat
-        condimentum ultricies, sapien mauris accumsan massa, at bibendum tellus orci id lorem. Donec
-        diam diam, porttitor dapibus facilisis sed, luctus vel eros. Donec tempus sodales lacus eu
-        accumsan. Quisque mi arcu, pulvinar ut porttitor ac, pulvinar sit amet magna. Integer dignissim
-        augue in ipsum ullamcorper pretium. Curabitur in tellus sem, eu placerat sem. Praesent tincidunt
-        viverra lacus vel placerat.</p>
+    <!-- TODO: Ordering of results -->
 
-    <p>Praesent a tellus sed diam posuere varius. In nec augue sit amet justo dapibus feugiat. Integer
-        laoreet magna sit amet ipsum suscipit eget venenatis libero egestas. Cum sociis natoque
-        penatibus et magnis dis parturient montes, nascetur ridiculus mus. Phasellus ac eleifend ipsum.
-        Nulla blandit fringilla felis ac fringilla. Phasellus facilisis dictum arcu vel auctor. In at
-        arcu leo. Pellentesque ornare tristique turpis sed interdum. Duis condimentum purus quis nunc
-        volutpat vehicula. Sed ornare mollis tincidunt. Donec quam tortor, dictum non faucibus et,
-        ornare vitae erat. Nunc ac orci mauris, eget placerat magna. Maecenas ac elit enim.</p>
+    <!-- TODO: Non-descriptors -->
 
-    <p>Nam luctus, ipsum in mattis gravida, leo ligula fermentum dolor, in blandit lorem turpis
-        tristique nisi. Maecenas tincidunt, magna sit amet facilisis luctus, elit mi suscipit nisi, a
-        commodo ligula libero eu dui. Sed a lacus nisl, sed suscipit odio. Duis rutrum, felis id mattis
-        volutpat, nunc dui tempus tellus, eu rutrum massa metus sed nibh. Phasellus libero lacus,
-        pretium in porta et, porta ut risus. Sed eros justo, cursus sed porta a, tincidunt rutrum nibh.
-        Nulla facilisi. Morbi eget massa at tortor sodales iaculis. Praesent eu elit sed quam sagittis
-        ornare.</p>
 
-    <p>Duis rutrum convallis quam. Fusce vehicula adipiscing risus, vel volutpat neque sollicitudin
-        quis. Duis non est sit amet diam aliquet semper sed laoreet est. Nullam at lacus nisi, auctor
-        pulvinar libero. Fusce eleifend, nibh eu tincidunt ullamcorper, dui dui gravida lorem, ultricies
-        varius dolor felis et ante. Aenean placerat urna a urna mollis ut hendrerit elit fringilla.
-        Nullam libero lacus, tempus id rutrum at, commodo non quam. Pellentesque eget leo nibh.</p>
+    <p>If the plug-in is applied to an input text field, the term selection widget is used.
+        When typing into the field, matching Agrovoc terms are displayed in a drop down.
+        Terms match the query string if, for all words in the query string, there are words in a term beginning with the
+        query string word. The matching is case-insensitive.</p>
 
+    <p>Terms matching the provided query are sorted as follows:
+    </p>
+    <ul>
+        <li>Exact match</li>
+        <li>Lexically sorted terms starting with the query string</li>
+        <li>Lexically sorted terms containing words with the query string</li>
+    </ul>
+
+    <h3>Options</h3>
+
+    <p> Below is an example with all configuration options specified with their default values.</p>
+
+    <div class="bs-docs-example">
+        <input type="text"
+               data-provide="agrovoc"
+               data-codes=""
+               data-hits="8"
+               data-suggestions="20"
+               data-url="http://168.202.48.143:8080/agrovoc">
+    </div>
+
+<pre class="prettyprint linenums">
+&lt;input type="text"
+       data-provide="agrovoc"
+       data-codes=""
+       data-hits="8"
+       data-suggestions="20"
+       data-suggest="synonyms, broader"
+       data-url="http://168.202.48.143:8080/agrovoc"&gt;
+</pre>
+
+    <table class="table table-bordered table-striped">
+        <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Default</th>
+            <th>Description</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td>codes</td>
+            <td>string</td>
+            <td></td>
+            <td>A comma separated list of Agrovoc term codes to pre-select when initializing the widget.</td>
+        </tr>
+        <tr>
+            <td>hits</td>
+            <td>number</td>
+            <td>8</td>
+            <td>The max number of terms to display in the dropdown when searching for term.</td>
+        </tr>
+        <tr>
+            <td>suggestions</td>
+            <td>number</td>
+            <td>20</td>
+            <td>The max number of terms to suggest when selecting a term in the dropdown.</td>
+        </tr>
+        <tr>
+            <td>suggest</td>
+            <td>string</td>
+            <td>synonyms, broader</td>
+            <td>Defines the relation types to include when providing suggestions.
+                Valid values are comma separated list of <em>synonyms</em>, <em>broader</em> and <em>narrower</em>.
+                When no relation types are specified, no suggestions are provided.
+            </td>
+        </tr>
+        <tr>
+            <td>url</td>
+            <td>url</td>
+            <td>http://168.202.48.143:8080/agrovoc</td>
+            <td>The URL to the JSONP service.</td>
+        </tr>
+        </tbody>
+    </table>
+
+
+    <h3>Events</h3>
+    <table class="table table-bordered table-striped">
+        <thead>
+        <tr>
+            <th>Event</th>
+            <th>Description</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td>selected</td>
+            <td>This events fires immediately when a term has been selected.</td>
+        </tr>
+        <tr>
+            <td>removed</td>
+            <td>This events fires immediately when a selected term has been removed.</td>
+        </tr>
+        </tbody>
+    </table>
+
+    <h3>Submitting selected terms</h3>
+
+    <p>Sometimes it's useful to submit selected terms in an HTML form.
+        To do this, put the input text field in a form and provide a name attribute.
+        When selecting terms, hidden input fields, with the same name as the input text field, are created.</p>
+
+    <p>Try the below example. Notice how the URL query parameters change when submitting the field with different terms
+        selected.</p>
+
+    <div id="submitExample" class="bs-docs-example">
+        <form action="#submitExample" method="get">
+            <input type="text" name="codes"
+                   data-provide="agrovoc"
+                   data-codes="36390, 4669">
+            <input type="submit" class="btn">
+        </form>
+    </div>
+
+<pre class="prettyprint linenums">
+&lt;form action="#submitExample" method="get"&gt;
+    &lt;input type="text" name="codes"
+           data-provide="agrovoc"
+           data-codes="36390, 4669"&gt;
+    &lt;input type="submit" class="btn"&gt;
+&lt;/form&gt;
+</pre>
+
+
+    <!-- TODO: Structure -->
+
+    <!-- TODO: Styling -->
 </section>
 <section id="renderingTerms">
 
@@ -194,64 +291,16 @@
         <h2>Rendering terms</h2>
     </div>
 
-    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam odio tellus, venenatis quis
-        interdum sed, semper ut mauris. Donec blandit placerat mi, et vestibulum sapien laoreet at.
-        Proin vel massa sed ligula tristique pellentesque. Integer quis rutrum dui. Sed malesuada
-        faucibus ligula, at tincidunt tellus consectetur eu. Nulla eu orci et nunc mattis scelerisque
-        sed at elit. Proin odio nunc, pellentesque vitae congue vel, sollicitudin eu nunc. Donec commodo
-        sodales quam, porttitor eleifend ante auctor quis. Vivamus nec sodales urna. Curabitur massa
-        ipsum, tempus laoreet congue eu, viverra non mauris. Maecenas est est, ullamcorper vel imperdiet
-        vel, hendrerit eget mi. Etiam neque dolor, feugiat tincidunt molestie at, molestie at magna.
-        Suspendisse potenti.</p>
+</section>
 
-    <p>Praesent enim sapien, varius sit amet facilisis vitae, dapibus at orci. Curabitur eget est et
-        enim vehicula placerat. Nunc augue neque, semper sed consectetur vel, sodales et ligula. Donec
-        eu leo felis, semper scelerisque mi. Ut convallis ultrices suscipit. Ut adipiscing, est placerat
-        condimentum ultricies, sapien mauris accumsan massa, at bibendum tellus orci id lorem. Donec
-        diam diam, porttitor dapibus facilisis sed, luctus vel eros. Donec tempus sodales lacus eu
-        accumsan. Quisque mi arcu, pulvinar ut porttitor ac, pulvinar sit amet magna. Integer dignissim
-        augue in ipsum ullamcorper pretium. Curabitur in tellus sem, eu placerat sem. Praesent tincidunt
-        viverra lacus vel placerat.</p>
+<section id="jsonpService">
 
-    <p>Praesent a tellus sed diam posuere varius. In nec augue sit amet justo dapibus feugiat. Integer
-        laoreet magna sit amet ipsum suscipit eget venenatis libero egestas. Cum sociis natoque
-        penatibus et magnis dis parturient montes, nascetur ridiculus mus. Phasellus ac eleifend ipsum.
-        Nulla blandit fringilla felis ac fringilla. Phasellus facilisis dictum arcu vel auctor. In at
-        arcu leo. Pellentesque ornare tristique turpis sed interdum. Duis condimentum purus quis nunc
-        volutpat vehicula. Sed ornare mollis tincidunt. Donec quam tortor, dictum non faucibus et,
-        ornare vitae erat. Nunc ac orci mauris, eget placerat magna. Maecenas ac elit enim.</p>
-
-    <p>Nam luctus, ipsum in mattis gravida, leo ligula fermentum dolor, in blandit lorem turpis
-        tristique nisi. Maecenas tincidunt, magna sit amet facilisis luctus, elit mi suscipit nisi, a
-        commodo ligula libero eu dui. Sed a lacus nisl, sed suscipit odio. Duis rutrum, felis id mattis
-        volutpat, nunc dui tempus tellus, eu rutrum massa metus sed nibh. Phasellus libero lacus,
-        pretium in porta et, porta ut risus. Sed eros justo, cursus sed porta a, tincidunt rutrum nibh.
-        Nulla facilisi. Morbi eget massa at tortor sodales iaculis. Praesent eu elit sed quam sagittis
-        ornare.</p>
-
-    <p>Duis rutrum convallis quam. Fusce vehicula adipiscing risus, vel volutpat neque sollicitudin
-        quis. Duis non est sit amet diam aliquet semper sed laoreet est. Nullam at lacus nisi, auctor
-        pulvinar libero. Fusce eleifend, nibh eu tincidunt ullamcorper, dui dui gravida lorem, ultricies
-        varius dolor felis et ante. Aenean placerat urna a urna mollis ut hendrerit elit fringilla.
-        Nullam libero lacus, tempus id rutrum at, commodo non quam. Pellentesque eget leo nibh.</p>
+    <div class="page-header">
+        <h2>JSONP service</h2>
+    </div>
 
 </section>
-<!--<h4>Example with all configuration options</h4>-->
-<!--<h4>Minimal jQuery example</h4>-->
-<!--<h4>jQuery example with all configuration options</h4>-->
-<!--<h4>Styling</h4>-->
-<!--<h4>Configuration options</h4>-->
 
-<!--<h3>Displaying terms</h3>-->
-<!--<h4>Minimal example</h4>-->
-<!--<h4>Example with all configuration options</h4>-->
-<!--<h4>Minimal jQuery example</h4>-->
-<!--<h4>jQuery example with all configuration options</h4>-->
-<!--<h4>Styling</h4>-->
-<!--<h4>Configuration options</h4>-->
-
-
-<h2>Service</h2>
 </div>
 </div>
 </div>
@@ -264,7 +313,7 @@
 <script src="js/bootstrap-scrollspy.js"></script>
 <script src="js/prettify.js"></script>
 <script type="text/javascript">
-    $('input#programmaticApiExample').agrovoc();
+    $('ul#programmaticApiExample').agrovoc({ codes: [36390, 4669]});
 </script>
 </body>
 </html>
