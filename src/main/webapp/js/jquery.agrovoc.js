@@ -136,6 +136,7 @@
 
     var Selector = function ($element, agrovoc) {
         this.agrovoc = agrovoc;
+        this.disableAutocomplete($element);
         this.$suggestedTerms = this.initSuggestedTerms();
         this.$selectedTerms = this.initSelectedTerms(this.$suggestedTerms);
         this.$hiddenInputs = this.initHiddenInputs();
@@ -147,6 +148,10 @@
 
     Selector.prototype = {
         constructor: Selector,
+
+        disableAutocomplete: function ($element) {
+            $element.attr('autocomplete', 'off');
+        },
 
         listen: function () {
             var that = this;
@@ -339,10 +344,15 @@
     var Displayer = function ($element, agrovoc) {
         this.agrovoc = agrovoc;
         this.$selectedTerms = this.initSelectedTerms();
+        this.addElementClasses($element);
     };
 
     Displayer.prototype = {
         constructor: Displayer,
+
+        addElementClasses: function ($element) {
+            $element.addClass('inline').addClass('selected-agrovoc-terms');
+        },
 
         getTermTemplate: function () {
             var template = this.agrovoc.options.termTemplate;
@@ -378,7 +388,8 @@
     };
 
     $.fn.agrovoc.defaults = {
-        url: 'http://foris.fao.org/agrovoc',
+//        url: 'http://foris.fao.org/agrovoc',
+        url: 'http://168.202.48.143:8080/agrovoc',
         language: 'EN'
     };
 

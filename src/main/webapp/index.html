@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>Agrovoc term selector</title>
+    <link href="css/css3pie-bootstrap.css" rel="stylesheet">
+    <link href="css/prettify.css" rel="stylesheet">
+    <link href="css/docs.css" rel="stylesheet">
+    <link href="css/bootstrap.css" rel="stylesheet">
+    <link href="css/agrovoc.css" rel="stylesheet">
+</head>
+<body onload="prettyPrint()">
+<div class="container">
+    <div class="hero-unit">
+        <h2>Agrovoc term selector</h2>
+
+        <p>This is a JSONP serving service and a companioning <a href="http://jquery.com/">jQuery</a> plug-in, used for
+            selecting <a href="http://www.fao.org/agrovoc/">Agrovoc</a> terms. It would typically be used to tag various
+            resources, or select terms to include when searching for resources.</p>
+
+    </div>
+    <h2>jQuery plug-in</h2>
+
+    <h3>Getting started</h3>
+
+    <p>To get this working at all, a couple of JavaScript libraries must be loaded on the page.
+        The <a href="js/jquery.agrovoc.js">plug-in</a> is dependent on <a href="http://jquery.com/">jQuery</a> and
+        the <a href="http://twitter.github.com/bootstrap/javascript.html#typeahead">Typeahead</a> in
+        Twitter's <a href="http://twitter.github.com/bootstrap/">Bootstrap</a>.
+        So these need to be included, in addition to the plug-in itself.
+        The complete Bootstrap JavaScript library can of course be included instead of only the Typeahead,
+        if more Bootstrap JavaScript components are used on your page. You might want to put the scripts
+        at the end of the body, to make the page render faster.</p>
+
+<pre class="prettyprint linenums">
+&lt;script src="js/jquery.js"&gt;&lt;/script&gt;
+&lt;script src="js/bootstrap-typeahead.js"&gt;&lt;/script&gt;
+&lt;script src="js/jquery.agrovoc.js"&gt;&lt;/script&gt;
+</pre>
+
+    <p>To make things look good, you'd probably want to add some CSS too.
+        For now, we'll add the complete Bootstrap style in addition to some plug-in specific styling.
+        There'll be details on the styling further ahead.</p>
+
+
+<pre class="prettyprint linenums">
+&lt;link href="css/bootstrap.css" rel="stylesheet"&gt;
+&lt;link href="css/agrovoc.css" rel="stylesheet"&gt;
+</pre>
+
+    <p>There are two modes of the plug-in. It can be used to select terms, or render pre-selected terms.
+        Here is an example of a term selector:</p>
+
+    <div class="bs-docs-example">
+        <input type="text"
+               placeholder="Type something..."
+               data-provide="agrovoc">
+    </div>
+
+<pre class="prettyprint linenums">
+&lt;input name="example1" type="text"
+       placeholder="Type something..."
+       data-provide="agrovoc"&gt;
+</pre>
+
+    <p>The <code>data-provide="agrovoc"</code> attribute is placed on an <code>input</code> tag.
+        This tells the plug-in it's a term selector. Below is an example of a term renderer:</p>
+
+    <div class="bs-docs-example">
+        <ul data-provide="agrovoc"
+            data-codes="36390, 4669"></ul>
+    </div>
+
+<pre class="prettyprint linenums">
+&lt;ul data-provide="agrovoc"
+    data-codes="36390, 4669"&gt;&lt;/ul&gt;
+</pre>
+
+    <p><code>data-provide="agrovoc"</code> attribute is placed on an <code>ul</code>.
+        This tells the plug-in it's a term renderer.
+        The <code>data-codes</code> attribute specify the Agrovoc codes to render.</p>
+
+    <h3>Data attribute API vs. Programmatic API</h3>
+
+    <p>
+        The plug-in can be used through two separate APIs. With the Data attribute API, as in the previous section, or
+        through a Programmatic API. It follows the convensions used in the Bootstrap
+        <a href="http://twitter.github.com/bootstrap/javascript.html#overview">JavaScript components</a>, so
+        more details can be found there.
+    </p>
+
+    <p>In short, the Data attribute API allows you to use the plug-in without writing any JavaScript.
+        <code>data-*</code> attributes are used setup and configure the plug-in.
+        The Programmatic API looks like any other jQuery plug-in.
+    </p>
+
+    <div class="bs-docs-example">
+        <input id="programmaticApiExample" type="text"
+               placeholder="Type something...">
+    </div>
+<pre class="prettyprint linenums">
+&lt;input id="programmaticApiExample" type="text"
+       placeholder="Type something..."&gt;
+
+&lt;script type="text/javascript"&gt;
+    $('input#programmaticApiExample').agrovoc();
+&lt;/script&gt;
+</pre>
+
+    <h3>Selecting terms</h3>
+
+    <p>The Getting started section presented a minimal example of a term selector.</p>
+
+    <h4>Example with all configuration options</h4>
+    <h4>Minimal jQuery example</h4>
+    <h4>jQuery example with all configuration options</h4>
+    <h4>Styling</h4>
+    <h4>Configuration options</h4>
+
+    <h3>Displaying terms</h3>
+    <h4>Minimal example</h4>
+    <h4>Example with all configuration options</h4>
+    <h4>Minimal jQuery example</h4>
+    <h4>jQuery example with all configuration options</h4>
+    <h4>Styling</h4>
+    <h4>Configuration options</h4>
+
+
+    <h2>Service</h2>
+
+    <form method="get" class="form-horizontal">
+        <fieldset>
+            <legend>Agrovoc example</legend>
+            <div class="control-group">
+                <div class="control-label">Rendering component</div>
+
+                <div class="controls">
+                    <ul class="inline selected-agrovoc-terms"
+                        data-provide="agrovoc"
+                        data-codes="36390, 4669"
+                        data-url="http://168.202.48.143:8080/agrovoc"></ul>
+                </div>
+            </div>
+            <hr>
+            <div class="control-group">
+                <label class="control-label" for="terms">Tagging component</label>
+
+                <div class="controls">
+                    <input id="terms" name="terms" type="text"
+                           placeholder="Type something..."
+                           data-provide="agrovoc"
+                           data-codes="36390, 4669"
+                           data-url="http://168.202.48.143:8080/agrovoc">
+
+                    <input type="submit" value="Submit" class="btn">
+                </div>
+            </div>
+        </fieldset>
+    </form>
+</div>
+<script src="js/jquery.js"></script>
+<script src="js/bootstrap-typeahead.js"></script>
+<script src="js/jquery.agrovoc.js"></script>
+<script src="js/prettify.js"></script>
+<script type="text/javascript">
+    $('input#programmaticApiExample').agrovoc();
+</script>
+</body>
+</html>
