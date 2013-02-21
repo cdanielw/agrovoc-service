@@ -38,7 +38,7 @@ class TermResource {
     String termByLabel(@PathParam('label') String label,
                        @QueryParam('language') String language) {
         def term = termProvider.findByLabel(label, language ?: 'EN')
-        if (!term) return "${callback}({})" // TODO: Handle this better
+        if (!term) return "${callback}({});" // TODO: Handle this better
         termToJsonp(term)
     }
 
@@ -87,7 +87,7 @@ class TermResource {
 
     private String termToJsonp(term) {
         addLinks(term)
-        "${callback}(${JsonOutput.toJson(term)})";
+        "${callback}(${JsonOutput.toJson(term)});";
     }
 
     private String termsToJsonp(terms) {
