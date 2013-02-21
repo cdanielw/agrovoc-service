@@ -143,13 +143,6 @@
         <h2>Selecting terms</h2>
     </div>
 
-    <!-- TODO: Describe the functions of the widget -->
-
-    <!-- TODO: Ordering of results -->
-
-    <!-- TODO: Non-descriptors -->
-
-
     <p>If the plug-in is applied to an input text field, the term selection widget is used.
         When typing into the field, matching Agrovoc terms are displayed in a drop down.
         Terms match the query string if, for all words in the query string, there are words in a term beginning with the
@@ -162,6 +155,42 @@
         <li>Lexically sorted terms starting with the query string</li>
         <li>Lexically sorted terms containing words with the query string</li>
     </ul>
+
+    <p>When selecting a term in the search result drop down, the term is added among the selected terms.
+        Optionally, suggested terms will also be displayed.
+        When clicking on an optional term, it's added to the selected terms.
+        When clicking on a selected term, it's removed and added to the set of suggested terms.</p>
+
+    <p>In the search result drop down, some terms are grayed out.
+        These are non-preferred terms. When clicking on such a term, it will not be selected.
+        Suggested terms will however be provided.</p>
+
+    <h3>Submitting selected terms</h3>
+
+    <p>Sometimes it's useful to submit selected terms in an HTML form.
+        To do this, put the input text field in a form and provide a name attribute.
+        When selecting terms, hidden input fields, with the same name as the input text field, are created.</p>
+
+    <p>Try the below example. Notice how the URL query parameters change when submitting the field with different terms
+        selected.</p>
+
+    <div id="submitExample" class="bs-docs-example">
+        <form action="#submitExample" method="get">
+            <input type="text" name="codes"
+                   data-provide="agrovoc"
+                   data-codes="36390, 4669">
+            <input type="submit" class="btn">
+        </form>
+    </div>
+
+<pre class="prettyprint linenums">
+&lt;form action="#submitExample" method="get"&gt;
+    &lt;input type="text" name="codes"
+           data-provide="agrovoc"
+           data-codes="36390, 4669"&gt;
+    &lt;input type="submit" class="btn"&gt;
+&lt;/form&gt;
+</pre>
 
     <h3>Options</h3>
 
@@ -252,33 +281,6 @@
         </tr>
         </tbody>
     </table>
-
-    <h3>Submitting selected terms</h3>
-
-    <p>Sometimes it's useful to submit selected terms in an HTML form.
-        To do this, put the input text field in a form and provide a name attribute.
-        When selecting terms, hidden input fields, with the same name as the input text field, are created.</p>
-
-    <p>Try the below example. Notice how the URL query parameters change when submitting the field with different terms
-        selected.</p>
-
-    <div id="submitExample" class="bs-docs-example">
-        <form action="#submitExample" method="get">
-            <input type="text" name="codes"
-                   data-provide="agrovoc"
-                   data-codes="36390, 4669">
-            <input type="submit" class="btn">
-        </form>
-    </div>
-
-<pre class="prettyprint linenums">
-&lt;form action="#submitExample" method="get"&gt;
-    &lt;input type="text" name="codes"
-           data-provide="agrovoc"
-           data-codes="36390, 4669"&gt;
-    &lt;input type="submit" class="btn"&gt;
-&lt;/form&gt;
-</pre>
 
 
     <!-- TODO: Structure -->
