@@ -94,7 +94,7 @@
                 that.renderTerm(term, $terms)
             })
         },
-        // TODO: Be more efficient to render
+
         renderTerm: function (term, $terms) {
             var $term = $(this.termTemplate);
             $term.data('term', term);
@@ -214,7 +214,7 @@
 
 
         initHiddenInputs: function () {
-            return $('<div class="agrovoc-hidden"></div>').insertAfter(this.agrovoc.$element);
+            return $('<div></div>').insertAfter(this.agrovoc.$element);
         },
 
         initInputName: function () {

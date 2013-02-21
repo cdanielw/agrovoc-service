@@ -1,3 +1,7 @@
+input#terms {
+    margin-bottom: 9px;
+}
+
 li.agrovoc-term {
     -webkit-border-radius: 9px;
     -moz-border-radius: 9px;
@@ -9,10 +13,6 @@ li.agrovoc-term {
     font-size: 12px;
     font-weight: bold;
     behavior: url(../css/PIE.htc);
-}
-
-input#terms {
-    margin-bottom: 9px;
 }
 
 ul.selected-agrovoc-terms li.agrovoc-term {
