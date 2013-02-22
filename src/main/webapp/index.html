@@ -212,7 +212,7 @@
        data-codes=""
        data-hits="8"
        data-suggestions="20"
-       data-suggest="synonyms, broader"
+       data-suggest="synonym, broader"
        data-language="EN"
        data-url="http://168.202.48.143:8080/agrovoc"&gt;
 </pre>
@@ -248,10 +248,10 @@
     <tr>
         <td>suggest</td>
         <td>string</td>
-        <td>synonyms, broader</td>
+        <td>synonym, broader</td>
         <td>Defines the relation types to include when providing suggestions.
             Valid values are comma separated list of
-            <code>synonyms</code>, <code>broader</code> and <code>narrower</code>.
+            <code>synonym</code>, <code>broader</code> and <code>narrower</code>.
             When no relation types are specified, no suggestions are provided.
         </td>
     </tr>
@@ -587,7 +587,7 @@
             <td>match</td>
             <td>string</td>
             <td></td>
-            <td>Indicates how to match terms to the query. Valid values are
+            <td><strong>Required</strong> parameter indicating how to match terms to the query. Valid values are
                 <ul>
                     <li><code>exact</code> - term must exactly match query</li>
                     <li><code>startsWith</code> - term must start with query.
@@ -600,14 +600,15 @@
             </td>
         </tr>
         <tr>
-            <td>relationshipTypes</td>
+            <td>relationshipType[]</td>
             <td>string</td>
             <td></td>
-            <td>The relationship types to include when rendering term relationship links.
-                It will also control which matching non-preferred terms to include in the result.
-                Non-preferred terms not containing any relationships of the specified types will be excluded from the
-                results. If no relationshipTypes are specified, no non-preferred terms are included.
-                Valid values are <code>synonyms</code>, <code>broader</code>, and <code>narrower</code>.
+            <td>A relationship type to include when rendering term relationship links.
+                Many parameters can be included to include more then one relationship types.
+                The set of relationship types will also control which matching non-preferred terms to include in the
+                result. Non-preferred terms not containing any relationships of the specified types will be excluded
+                from the results. If no relationshipTypes are specified, no non-preferred terms are included.
+                Valid values are <code>synonym</code>, <code>broader</code>, and <code>narrower</code>.
             </td>
         </tr>
         <tr>
@@ -631,9 +632,9 @@ callback({
     results: [
         {
             code: 10,
-            language: "EN",
             label: "Abies",
-            preferredTerm: true,
+            preferred: true,
+            language: "EN",
             relationships: "URI to related terms"
         },
         ...

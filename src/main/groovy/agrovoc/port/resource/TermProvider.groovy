@@ -1,20 +1,17 @@
 package agrovoc.port.resource
 
-import agrovoc.dto.LabelQuery
+import agrovoc.dto.ByCodeQuery
+import agrovoc.dto.ByLabelQuery
+import agrovoc.dto.RelationshipQuery
+import agrovoc.dto.TermDescription
 
 /**
  * @author Daniel Wiell
  */
 interface TermProvider {
-    Map getByCode(long code, String language)
+    List<TermDescription> findAllByCode(ByCodeQuery query)
 
-    Map<String, Object> findByLabel(String label, String language)
+    List<TermDescription> findAllByLabel(ByLabelQuery query)
 
-    List<Map<String, Object>> findAllWhereLabelStartsWith(LabelQuery query)
-
-    List<Map<String, Object>> findAllWhereWordInLabelStartsWith(LabelQuery query)
-
-    List<Map<String, Object>> findAllBroaderTerms(long code, String language)
-
-    List<Map<String, Object>> findAllNarrowerTerms(long code, String language)
+    List<TermDescription> findRelationships(RelationshipQuery query)
 }

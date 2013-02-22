@@ -3,7 +3,6 @@ package agrovoc.adapter.persistence
 import agrovoc.dto.Term
 import agrovoc.dto.TermDescription
 import agrovoc.dto.TermLinks
-import agrovoc.port.persistence.NodeFinder
 import agrovoc.port.persistence.TermPersister
 import org.neo4j.graphdb.*
 

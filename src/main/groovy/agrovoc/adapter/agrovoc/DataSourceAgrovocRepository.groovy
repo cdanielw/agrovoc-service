@@ -33,8 +33,8 @@ class DataSourceAgrovocRepository implements AgrovocRepository {
                 term = createTerm(rs)
             }
             String language = rs.getString('languagecode')
-            TermDescription termDescription = new TermDescription(
-                    language, rs.getInt('statusid'), rs.getString('termspell'))
+            TermDescription termDescription = new TermDescription(term.code, rs.getInt('statusid'), rs.getString('termspell'),
+                    language)
             term.descriptionByLanguage[language] = termDescription
         }
         if (term) callback.call(term)

@@ -10,11 +10,11 @@ class Term {
     final Map<String, TermDescription> descriptionByLanguage = [:]
 
     Term(long code, String scope, Date lastChanged) {
+        assert code
+        assert lastChanged
         this.code = code
         this.scope = scope
         this.lastChanged = lastChanged
-        assert code
-        assert lastChanged
     }
 
     public java.lang.String toString() {
@@ -22,23 +22,6 @@ class Term {
     }
 }
 
-class TermDescription {
-    final String language
-    final int status
-    final String label
-
-    TermDescription(String language, int status, String label) {
-        this.language = language
-        this.status = status
-        this.label = label
-        assert language
-        assert label
-    }
-
-    public java.lang.String toString() {
-        "$label ($status)"
-    }
-}
 
 class TermLinks {
     long startTermCode

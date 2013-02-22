@@ -23,8 +23,8 @@
             if (!this.options.codes) return;
             var codes = this.options.codes ? $.parseJSON('[' + this.options.codes + ']') : [];
             var that = this;
-            this.jsonpFromRelativeUrl('/term', { code: codes }).done(function (terms) {
-                that.addTerms(terms, that.$selectedTerms)
+            this.jsonpFromRelativeUrl('/term', { code: codes }).done(function (json) {
+                that.addTerms(json.results, that.$selectedTerms)
             });
         },
 
@@ -142,6 +142,10 @@
         this.$hiddenInputs = this.initHiddenInputs();
         this.inputName = this.initInputName();
         this.termsByLabel = {};
+        this.relationshipTypes = ['synonym', 'broader']; // TODO: Make configurable
+//        this.relationshipTypes = ['synonym', 'narrower'];
+//        this.relationshipTypes = ['synonym', ];
+//        this.relationshipTypes = [];
         this.createTypeahead($element);
         this.listen();
     };
@@ -255,7 +259,9 @@
                     this.executeFindAllThatStartsWith(query, true),
                     this.executeFindAllWhereWordStartsWith(query, false)
                 ).done(function (exact, startsWith, wordStartsWith) {
-                    var terms = that.flatten([exact[0], startsWith[0], wordStartsWith[0]]);
+                    var terms = that.flatten($.map([exact[0], startsWith[0], wordStartsWith[0]], function (resultSet) {
+                        return resultSet.results
+                    }));
                     var labels = that.unique(
                         $.map(terms, function (term) {
                             that.termsByLabel[term.label] = term;
@@ -267,37 +273,46 @@
         },
 
         executeFindExactMatch: function (query) {
-            return this.agrovoc.jsonpFromRelativeUrl('/term/label/' + query);
+            return this.agrovoc.jsonpFromRelativeUrl('/term/find', {
+                q: query,
+                max: 1,
+                match: 'exact',
+                relationshipType: this.relationshipTypes});
         },
 
         executeFindAllThatStartsWith: function (query) {
             return this.agrovoc.jsonpFromRelativeUrl('/term/find', {
                 q: query,
                 max: this.agrovoc.options.items,
-                startsWith: true });
+                match: 'startsWith',
+                relationshipType: this.relationshipTypes });
         },
 
         executeFindAllWhereWordStartsWith: function (query) {
             return this.agrovoc.jsonpFromRelativeUrl('/term/find', {
                 q: query,
-                max: this.agrovoc.options.items});
+                max: this.agrovoc.options.items,
+                match: 'freeText',
+                relationshipType: this.relationshipTypes});
         },
 
         highlighter: function (label) {
             var term = this.termsByLabel[label];
-            return !this.isTermDescriptor(term) ?
+            return !term.preferred ?
                 '<span class="muted">' + label + '</span>' : label;
         },
 
         updater: function (label) {
             var term = this.termsByLabel[label];
-            if (this.isTermDescriptor(term))
+            if (term.preferred)
                 this.agrovoc.addTerm(term);
 
             var that = this;
-            this.agrovoc.jsonpFromAbsoluteUrl(term.links.broader).done(function (suggestedTerms) {
-                that.suggestTerms(suggestedTerms);
-            });
+            if (term.relationships) {
+                this.agrovoc.jsonpFromAbsoluteUrl(term.relationships).done(function (json) {
+                    that.suggestTerms(json.results);
+                });
+            }
 
             return '';
         },
@@ -318,10 +333,6 @@
             this.agrovoc.removeChild(this.$hiddenInputs, function ($item) {
                 return parseInt($item.val()) == term.code;
             });
-        },
-
-        isTermDescriptor: function (term) {
-            return term.status == 20;
         },
 
         flatten: function (array) {

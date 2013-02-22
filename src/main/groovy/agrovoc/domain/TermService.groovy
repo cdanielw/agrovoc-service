@@ -1,8 +1,11 @@
 package agrovoc.domain
 
+import agrovoc.dto.ByCodeQuery
+import agrovoc.dto.RelationshipQuery
 import agrovoc.dto.Term
+import agrovoc.dto.TermDescription
 import agrovoc.dto.TermLinks
-import agrovoc.dto.LabelQuery
+import agrovoc.dto.ByLabelQuery
 import agrovoc.port.agrovoc.AgrovocRepository
 import agrovoc.port.cron.AgrovocTermPollingJob
 import agrovoc.port.event.TermEventPublisher
@@ -66,27 +69,15 @@ class TermService implements AgrovocTermPollingJob, TermEventPublisher, TermProv
         linkListeners << listener
     }
 
-    Map getByCode(long code, String language) {
-        termRepository.getByCode(code, language)
+    List<TermDescription> findAllByCode(ByCodeQuery query) {
+        termRepository.findAllByCode(query)
     }
 
-    Map<String, Object> findByLabel(String label, String language) {
-        termRepository.findByLabel(label, language)
+    List<TermDescription> findAllByLabel(ByLabelQuery query) {
+        termRepository.findAllByLabel(query)
     }
 
-    List<Map<String, Object>> findAllWhereLabelStartsWith(LabelQuery query) {
-        termRepository.findAllWhereLabelStartsWith(query)
-    }
-
-    List<Map<String, Object>> findAllWhereWordInLabelStartsWith(LabelQuery query) {
-        termRepository.findAllWhereWordInLabelStartsWith(query)
-    }
-
-    List<Map<String, Object>> findAllBroaderTerms(long code, String language) {
-        termRepository.findAllBroaderTerms(code, language)
-    }
-
-    List<Map<String, Object>> findAllNarrowerTerms(long code, String language) {
-        termRepository.findAllNarrowerTerms(code, language)
+    List<TermDescription> findRelationships(RelationshipQuery query) {
+        termRepository.findRelatedTerms(query)
     }
 }

@@ -7,6 +7,10 @@ import groovyx.net.http.RESTClient
 import spock.lang.Shared
 import spock.lang.Specification
 
+import static agrovoc.dto.ByLabelQuery.Match.exact
+import static agrovoc.dto.ByLabelQuery.Match.freeText
+import static agrovoc.dto.ByLabelQuery.Match.startsWith
+
 /**
  * @author Daniel Wiell
  */
@@ -19,6 +23,9 @@ class Resource_FunctionalTest extends Specification {
         service.init()
         client = new RESTClient("${AgrovocService.BASE_URI}/")
         client.parser.'application/javascript' = client.parser.'text/plain'
+        client.handler.failure = { resp ->
+            return resp
+        }
     }
 
     def cleanup() {
@@ -35,9 +42,37 @@ class Resource_FunctionalTest extends Specification {
         service.createTerm(createTerm(code, [EN: expectedLabel]))
 
         when:
-        def result = getJson("term/$code")
+        def document = getJson('term', ['code[]': code])
 
-        then: result.label == expectedLabel
+        then: document.results.first().label == expectedLabel
+    }
+
+    def 'When getting term by non-existing code, 404 is returned'() {
+        expect: get('term', ['code[]': 123]).status == 404
+    }
+
+    def 'Given no code[] parameter, when getting term by code, 400 is returned'() {
+        expect: get('term').status == 400
+    }
+
+    def 'Given invalid code[] parameter, when getting term by code, 400 is returned'() {
+        expect: get('term', ['code[]': 'invalid']).status == 400
+    }
+
+    def 'Given invalid ralationshipType[] parameter, when getting term by code, 400 is returned'() {
+        expect: get('term', ['code[]': 123, 'relationshipType[]': 'invalid']).status == 400
+    }
+
+    def 'Given invalid language parameter, when getting term by code, 400 is returned'() {
+        expect: get('term', ['code[]': '213', 'language': 'invalid']).status == 400
+    }
+
+    def 'Given missing q parameter, when getting term by label, 400 is returned'() {
+        expect: get('term').status == 400
+    }
+
+    def 'Given invalid match parameter, when getting term by label, 400 is returned'() {
+        expect: get('term', [match: 'invalid']).status == 400
     }
 
     def 'When finding terms by label, JSON representation is returned'() {
@@ -49,11 +84,11 @@ class Resource_FunctionalTest extends Specification {
         ])
 
         when:
-        def result = getJson("term/find", [q: query])
+        def json = getJson("term/find", [q: query, match: freeText])
 
         then:
-        result.size() == 1
-        result.first().label == expectedLabel
+        json.results.size() == 1
+        json.results.first().label == expectedLabel
     }
 
     def 'When finding terms that starts with, JSON representation is returned'() {
@@ -65,11 +100,11 @@ class Resource_FunctionalTest extends Specification {
         ])
 
         when:
-        def result = getJson("term/find", [q: query, startsWith: true])
+        def json = getJson("term/find", [q: query, match: startsWith])
 
         then:
-        result.size() == 1
-        result.first().label == expectedLabel
+        json.results.size() == 1
+        json.results.first().label == expectedLabel
     }
 
     def 'When getting multiple terms by code, JSON representation is returned'() {
@@ -79,10 +114,10 @@ class Resource_FunctionalTest extends Specification {
         ])
 
         when:
-        def result = getJson("term", ['code[]': [123, 456]])
+        def json = getJson("term", ['code[]': [123, 456]])
 
         then:
-        result.size() == 2
+        json.results.size() == 2
     }
 
     def 'When finding by label, JSON representation is returned'() {
@@ -91,23 +126,30 @@ class Resource_FunctionalTest extends Specification {
         service.createTerm(term)
 
         when:
-        def result = getJson("term/label/$label")
+        def json = getJson("term/find", [q: label, match: exact])
 
-        then: result.code == term.code
+        then: json.results.first().code == term.code
     }
 
-    def getJson(String path, Map query = [:]) {
-        query.callback = 'jsonpCallback'
-        def jsonp = client.get(path: path,
-                query: query).data.text as String
+    private getJson(String path, Map query = [:]) {
+        Object response = get(path, query)
+        assert response.status == 200
+        def jsonp = response.data.text as String
         String json = jsonp.find(~/jsonpCallback\((.*)\)/) { match, json -> json }
         new JsonSlurper().parseText(json)
+    }
+
+    private Object get(String path, Map query = [:]) {
+        query.callback = 'jsonpCallback'
+        Object response = client.get(path: path,
+                query: query)
+        response
     }
 
     private Term createTerm(long code, Map<String, String> labelByLanguage) {
         def term = new Term(code, '', new Date() - 10)
         labelByLanguage.each { language, label ->
-            term.descriptionByLanguage[language] = new TermDescription(language, 20, label)
+            term.descriptionByLanguage[language] = new TermDescription(term.code, 20, label, language)
         }
         return term
 

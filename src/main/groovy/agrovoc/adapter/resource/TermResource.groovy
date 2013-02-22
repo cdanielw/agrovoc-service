@@ -1,13 +1,17 @@
 package agrovoc.adapter.resource
 
-import agrovoc.dto.LabelQuery
+import agrovoc.dto.*
+import agrovoc.dto.ByLabelQuery.Match
+import agrovoc.exception.NotFoundException
 import agrovoc.port.resource.TermProvider
-import groovy.json.JsonOutput
+import groovy.json.JsonBuilder
 
 import javax.ws.rs.*
 import javax.ws.rs.core.Context
+import javax.ws.rs.core.Response
 import javax.ws.rs.core.UriInfo
-import javax.xml.ws.WebServiceException
+
+import static agrovoc.dto.RelationshipType.createRelationshipTypes
 
 /**
  * @author Daniel Wiell
@@ -24,90 +28,125 @@ class TermResource {
     }
 
     @GET
-    @Path("/{code}")
     @Produces('application/javascript')
-    String termByCode(@PathParam('code') long code,
-                      @QueryParam('language') String language) {
-        def term = termProvider.getByCode(code, language ?: 'EN')
-        termToJsonp(term)
-    }
+    String byCode(@QueryParam('code[]') List<String> codes,
+                  @QueryParam('relationshipType[]') List<String> types,
+                  @QueryParam('language') String language) {
+        assertParameter('code[] parameter is mandatory') { codes }
+        assertParameter('code[] parameter must be number') { allLongs(codes) }
+        assertRelationshipTypes(types)
+        assertLanguage(language)
 
-    @GET
-    @Path("/label/{label}")
-    @Produces('application/javascript')
-    String termByLabel(@PathParam('label') String label,
-                       @QueryParam('language') String language) {
-        def term = termProvider.findByLabel(label, language ?: 'EN')
-        if (!term) return "${callback}({});" // TODO: Handle this better
-        termToJsonp(term)
-    }
-
-    @GET
-    @Produces('application/javascript')
-    String terms(@QueryParam('code[]') List<Long> codes,
-                 @QueryParam('language') String language) {
-        // TODO: Make more efficient
-        def terms = codes.collect {
-            termProvider.getByCode(it, language ?: 'EN')
+        def byCodeQuery = new ByCodeQuery(toLongs(codes), language ?: 'EN')
+        try {
+            def terms = termProvider.findAllByCode(byCodeQuery)
+            termsToJsonp(terms, createRelationshipTypes(types), byCodeQuery.language)
+        } catch (NotFoundException e) {
+            throw notFoundException(e.message)
         }
-        termsToJsonp(terms)
-    }
-
-    @GET
-    @Path("/{code}/broader")
-    @Produces('application/javascript')
-    String broader(@PathParam('code') long code,
-                   @QueryParam('language') String language) {
-        def terms = termProvider.findAllBroaderTerms(code, language ?: 'EN')
-        termsToJsonp(terms)
-    }
-
-    @GET
-    @Path("/{code}/narrower")
-    @Produces('application/javascript')
-    String narrower(@PathParam('code') long code,
-                    @QueryParam('language') String language) {
-        def terms = termProvider.findAllNarrowerTerms(code, language ?: 'EN')
-        termsToJsonp(terms)
     }
 
     @GET
     @Path("/find")
     @Produces('application/javascript')
-    String find(@QueryParam('startsWith') boolean startsWith,
-                @QueryParam('q') String query,
-                @QueryParam('language') String language,
-                @QueryParam('max') Integer max) {
-        def labelQuery = new LabelQuery(query, language ?: 'EN', max ?: 20)
-        def terms = startsWith ?
-            termProvider.findAllWhereLabelStartsWith(labelQuery) :
-            termProvider.findAllWhereWordInLabelStartsWith(labelQuery)
-        termsToJsonp(terms)
+    String byLabel(@QueryParam('q') String query,
+                   @QueryParam('max') Integer max,
+                   @QueryParam('match') String match,
+                   @QueryParam('relationshipType[]') List<String> types,
+                   @QueryParam('language') String language) {
+        assertParameter('q parameter is mandatory') { query }
+        assertParameter('match parameter is mandatory') { match }
+        assertParameter("match parameter must be one of ${Match.names()}") { match in Match.names() }
+        assertRelationshipTypes(types)
+        assertLanguage(language)
+
+        def byLabelQuery = new ByLabelQuery(query, max ?: 20, match, types, language ?: 'EN')
+        def terms = termProvider.findAllByLabel(byLabelQuery)
+        termsToJsonp(terms, byLabelQuery.relationshipTypes, byLabelQuery.language)
     }
 
-    private String termToJsonp(term) {
-        addLinks(term)
-        "${callback}(${JsonOutput.toJson(term)});";
+    @GET
+    @Path("/{code}/relationships")
+    @Produces('application/javascript')
+    String relationships(@PathParam('code') long code,
+                         @QueryParam('max') int max,
+                         @QueryParam('relationshipType[]') List<String> types,
+                         @QueryParam('language') String language) {
+        assertLanguage(language)
+
+        def relationshipQuery = new RelationshipQuery(code, max ?: 20, types, language ?: 'EN')
+        def terms = termProvider.findRelationships(relationshipQuery)
+        termsToJsonp(terms, [] as Set, relationshipQuery.language)
     }
 
-    private String termsToJsonp(terms) {
-        terms.each { addLinks(it) }
-        "${callback}(${JsonOutput.toJson(terms)})";
+    private String toJsonp(json) {
+        "${callback}($json)"
+    }
+
+    private String termsToJsonp(List<TermDescription> terms, Set<RelationshipType> relationshipTypes, String language) {
+        def json = [results:
+                terms.collect { term ->
+                    def termMap = [
+                            code: term.code,
+                            label: term.label,
+                            preferred: term.preferred,
+                            language: language
+                    ]
+                    if (relationshipTypes)
+                        termMap.relationships = getRelationshipLink(term, relationshipTypes, language)
+                    return termMap
+                }]
+        return toJsonp(new JsonBuilder(json).toString())
+    }
+
+    private String getRelationshipLink(TermDescription term, Set<RelationshipType> types, String language) {
+        def typesParams = types.collect { "relationshipType[]=${it.name()}" }.join('&')
+        "${ui.baseUri}term/$term.code/relationships?$typesParams&language=$language"
     }
 
     private String getCallback() {
-        def callback = ui.queryParameters.callback?.first()
-        if (!callback)
-            throw new WebServiceException('callback parameter missing') // TODO: Handle this with a 400
-        return callback
+        ui.queryParameters.callback?.first() ?: 'callback'
     }
 
-    private void addLinks(term) {
-        def links = [
-                self: "${ui.baseUri}term/$term.code?language=$term.language",
-                broader: "${ui.baseUri}term/$term.code/broader?language=$term.language",
-                narrower: "${ui.baseUri}term/$term.code/narrower?language=$term.language"
-        ]
-        term.links = links
+    private void assertParameter(String message, Closure assertion) {
+        if (!assertion())
+            throw new WebApplicationException(
+                    Response.status(HttpURLConnection.HTTP_BAD_REQUEST)
+                            .entity(message)
+                            .build()
+            )
+    }
+
+    private void assertLanguage(String language) {
+        assertParameter("Language must be two character iso code. Got $language") {
+            !language || language ==~ /\w\w/
+        }
+    }
+
+    private void assertRelationshipTypes(List<String> relationshipTypes) {
+        assertParameter("Relationship types must be one of ${RelationshipType.names()}") {
+            relationshipTypes.every { it in RelationshipType.names() }
+        }
+    }
+
+    private WebApplicationException notFoundException(String message) {
+        new WebApplicationException(
+                Response.status(HttpURLConnection.HTTP_NOT_FOUND)
+                        .entity(message)
+                        .build()
+        )
+    }
+
+    private List<Long> toLongs(List<String> strings) {
+        strings.collect { it as long }
+    }
+
+    private boolean allLongs(List<String> strings) {
+        try {
+            toLongs(strings)
+            return true
+        } catch (NumberFormatException ignore) {
+            return false
+        }
     }
 }

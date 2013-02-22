@@ -1,8 +1,13 @@
-package agrovoc.port.persistence
+package agrovoc.adapter.persistence
 
+import agrovoc.exception.NotFoundException
+import org.apache.lucene.index.Term
+import org.apache.lucene.search.BooleanClause
+import org.apache.lucene.search.BooleanQuery
+import org.apache.lucene.search.TermQuery
 import org.neo4j.graphdb.*
 import org.neo4j.graphdb.index.Index
-import agrovoc.exception.NotFoundException
+import org.neo4j.index.lucene.QueryContext
 
 import static org.neo4j.graphdb.Direction.INCOMING
 import static org.neo4j.graphdb.Direction.OUTGOING
@@ -13,6 +18,8 @@ import static org.neo4j.graphdb.Direction.OUTGOING
 class NodeFinder {
     private static final RelationshipType DESCRIBES = DynamicRelationshipType.withName('DESCRIBES')
     private static final String ENGLISH = 'EN'
+    private static final String FRENCH = 'FR'
+    private static final String SPANISH = 'ES'
 
     private final GraphDatabaseService graphDb
 
@@ -27,7 +34,7 @@ class NodeFinder {
     Node getTermDescription(Node term, String language) {
         def termDescription = findTermDescription(term, language)
         if (!termDescription)
-            throw new NotFoundException("Term ${term['code']} has no description in English")
+            throw new NotFoundException("No description found for term with code ${term['code']}")
         return termDescription
     }
 
@@ -35,11 +42,20 @@ class NodeFinder {
         def relationship = term.getRelationships(DESCRIBES, INCOMING).find {
             it.startNode['language'] == language
         } as Relationship
-        def termDescription = relationship?.startNode
-        if (termDescription) return termDescription
-        if (language != ENGLISH)
-            termDescription = findTermDescription(term, ENGLISH)
-        return termDescription
+        return relationship?.startNode ?: findFallbackTermDescription(term)
+    }
+
+    private Node findFallbackTermDescription(Node term) {
+        term.getRelationships(DESCRIBES, INCOMING)
+                .collect { it.startNode }.sort { getLanguageSort(it) }.first()
+    }
+
+    private String getLanguageSort(Node termDescription) {
+        def language = termDescription['language']
+        if (language == ENGLISH) return "1"
+        if (language == FRENCH) return "2"
+        if (language == SPANISH) return "3"
+        return language
     }
 
     Node getTermByCode(long code) {
@@ -52,6 +68,15 @@ class NodeFinder {
     Node findTermByCode(long code) {
         def terms = accessIndex()
         terms.get('code', code).single
+    }
+
+    List<Node> findTermsByCode(Collection<Long> codes) {
+        def terms = accessIndex()
+        def query = new BooleanQuery()
+        codes.each { code ->
+            query.add(new TermQuery(new Term('code', code as String)), BooleanClause.Occur.SHOULD)
+        }
+        terms.query(new QueryContext(query)).collect { it }
     }
 
     Index<Node> accessIndex() {

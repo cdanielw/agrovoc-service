@@ -1,199 +1,421 @@
 package agrovoc.adapter.persistence
 
-import agrovoc.dto.LabelQuery
-import agrovoc.dto.Term
-import agrovoc.dto.TermDescription
-import agrovoc.dto.TermLinks
+import agrovoc.dto.*
 import agrovoc.exception.NotFoundException
 import agrovoc.neo4j.Neo4j
 import spock.lang.Specification
 
+import static agrovoc.dto.ByLabelQuery.Match.*
+import static agrovoc.dto.RelationshipType.broader
+import static agrovoc.dto.RelationshipType.synonym
+import static agrovoc.dto.TermDescription.getPREFERRED_STATUS
+
 /**
  * @author Daniel Wiell
  */
+@SuppressWarnings("GroovyUnusedAssignment")
 class Neo4jTermRepository_IntegrationTest extends Specification {
+    int nonPreferredStatus = 10
+    int max = 20
     def neo4j = new Neo4j()
     def repository = new Neo4jTermRepository(neo4j.graphDb)
     def persister = new Neo4jTermPersister(neo4j.graphDb)
 
     def cleanup() { neo4j.stop() }
 
-    def 'Can get by code'() {
-        def term = createTerm('Term label')
-        persister.persistTerm(term)
+    def 'Given A, when finding by code of A, then description of A is returned'() {
+        def a = persistTerm 'A'
 
         when:
-        def result = repository.getByCode(term.code, 'EN')
+        def result = repository.findAllByCode(byCodeQuery([a.code]))
 
         then:
-        result == toMap(term, 'EN')
+        result?.size() == 1
+        result.first().label == 'A'
     }
 
-    def 'Given no term exists, when getting by code, NotFoundException is thrown'() {
-        when: repository.getByCode(123L, 'EN')
+    def 'Given A and B, when finding by code of A and B, then description of A and B is returned'() {
+        def a = persistTerm 'A', 123
+        def b = persistTerm 'B', 456
+
+        when:
+        def result = repository.findAllByCode(byCodeQuery([a.code, b.code]))
+
+        then:
+        result?.size() == 2
+        result.find { it.label == 'A' }
+        result.find { it.label == 'B' }
+    }
+
+    def 'Given A and B, when finding by code of A, then description of B is not returned'() {
+        def a = persistTerm 'A', 123
+        def b = persistTerm 'B', 456
+
+        when:
+        def result = repository.findAllByCode(byCodeQuery([a.code]))
+
+        then:
+        result?.size() == 1
+        result.first().label != 'B'
+    }
+
+    def 'Given code of non-existing term, when finding by code, then NotFoundException is thrown'() {
+        def nonExistingCode = 123
+
+        when: repository.findAllByCode(byCodeQuery([nonExistingCode]))
         then: thrown NotFoundException
     }
 
-    def 'Can query by label'() {
-        def term = createTerm('Term label')
-        persister.persistTerm(term)
+    def 'Given A, when finding by exact label of A, then description of A is returned'() {
+        def a = persistTerm 'A', 123
 
         when:
-        def result = repository.findAllWhereWordInLabelStartsWith(query('Label', 'EN'))
+        def result = repository.findAllByLabel(byLabelQuery('A', exact))
 
         then:
-        result.size() == 1
+        result?.size() == 1
+        result.first().code == a.code
     }
 
-    def 'Given terms in multiple languages, When querying by label, only term in provided language are returned'() {
-        persister.persistTerm(createTerm('Term label', 123, 'EN'))
-        persister.persistTerm(createTerm('Term label', 465, 'FR'))
+    def 'Given A is labeled "Label A", when finding terms starting "Lab", then description of A is returned'() {
+        def a = persistTerm 'Label A', 123
 
         when:
-        def result = repository.findAllWhereWordInLabelStartsWith(query('Label', 'FR'))
+        def result = repository.findAllByLabel(byLabelQuery('Lab', startsWith))
 
         then:
-        result.size() == 1
+        result?.size() == 1
+        result.first().code == a.code
     }
 
-    def 'Given non-descriptor term, when querying by label, term is excluded in result'() {
-        def term = createNonDescriptorTerm('Term label')
-        persister.persistTerm(term)
+    def 'Given A is labeled "A Label", when finding terms starting "Lab", then description of A is not returned'() {
+        def a = persistTerm 'A Label', 123
 
         when:
-        def result = repository.findAllWhereWordInLabelStartsWith(query('Label', 'EN'))
+        def result = repository.findAllByLabel(byLabelQuery('Lab', startsWith))
 
         then:
-        result.empty
+        result?.size() == 0
     }
 
-    def 'Sorts results by label'() {
-        persister.persistTerm(createTerm('c Term label', 1))
-        persister.persistTerm(createTerm('A Term label', 2))
-        persister.persistTerm(createTerm('b Term label', 3))
-        persister.persistTerm(createTerm('E Term label', 4))
-        persister.persistTerm(createTerm('d Term label', 5))
+    def 'Given A is labeled "A Label", when doing free text search for "Lab", then description of A is returned'() {
+        def a = persistTerm 'A Label', 123
 
         when:
-        def result = repository.findAllWhereWordInLabelStartsWith(query('Label', 'EN'))
+        def result = repository.findAllByLabel(byLabelQuery('Lab', freeText))
 
         then:
-        result.collect { it.label.substring(0, 1).toUpperCase() } == ['A', 'B', 'C', 'D', 'E']
+        result?.size() == 1
+        result.first().code == a.code
+    }
+
+    def 'When finding terms by label start, then returned descriptions are sorted by title'() {
+        persistTerm 'Term c label', 1
+        persistTerm 'Term A label', 2
+        persistTerm 'Term b label', 3
+        persistTerm 'Term E label', 4
+        persistTerm 'Term d label', 5
+
+        when:
+        def result = repository.findAllByLabel(byLabelQuery('Ter', startsWith))
+
+        then:
+        result.collect { it.label.substring(5, 6).toUpperCase() } == ['A', 'B', 'C', 'D', 'E']
+    }
+
+    def 'When doing free text search, then returned descriptions are sorted by title'() {
+        persistTerm 'Term c label', 1
+        persistTerm 'Term A label', 2
+        persistTerm 'Term b label', 3
+        persistTerm 'Term E label', 4
+        persistTerm 'Term d label', 5
+
+        when:
+        def result = repository.findAllByLabel(byLabelQuery('Label', freeText))
+
+        then:
+        result.collect { it.label.substring(5, 6).toUpperCase() } == ['A', 'B', 'C', 'D', 'E']
+    }
+
+    def 'Given term with label "AbC", when searching for exact label "aBc" , description of term is returned'() {
+        persistTerm 'AbC', 123
+
+        when:
+        def result = repository.findAllByLabel(byLabelQuery('aBc', exact))
+
+        then:
+        !result.empty
+    }
+
+    def 'Given term with label "AbC", when finding terms starting with "aBc" , description of term is returned'() {
+        persistTerm 'AbC', 123
+
+        when:
+        def result = repository.findAllByLabel(byLabelQuery('aBc', startsWith))
+
+        then:
+        !result.empty
+    }
+
+    def 'Given term with label "AbC", when doing free text search with "aBc" , description of term is returned'() {
+        persistTerm 'AbC', 123
+
+        when:
+        def result = repository.findAllByLabel(byLabelQuery('aBc', freeText))
+
+        then:
+        !result.empty
+    }
+
+    def 'Given A is non-preferred, when finding by label without relations, then A is not returned'() {
+        persistTerm 'A', 123, 'EN', nonPreferredStatus
+
+        when:
+        def result = repository.findAllByLabel(byLabelQuery('A', exact, [], max))
+
+        then:
+        result?.size() == 0
+    }
+
+    def 'Given A is non-preferred and synonym to B, when finding by label, including synonyms, then A is returned'() {
+        def a = persistTerm 'A', 123, 'EN', nonPreferredStatus
+        def b = persistTerm 'B', 456
+        persistLink a, b, synonym
+
+        when:
+        def result = repository.findAllByLabel(byLabelQuery('A', exact, [synonym], max))
+
+        then:
+        result?.size() == 1
+        result.first().code == a.code
+    }
+
+    def 'Given A, B with labels starting with "Label", when finding max 1 labels starting with "Label", then A is returned'() {
+        def a = persistTerm 'Label A', 123
+        def b = persistTerm 'Label B', 456
+        def c = persistTerm 'Label C', 789
+
+        when:
+        def result = repository.findAllByLabel(byLabelQuery('Label', startsWith, [], 1))
+
+        then:
+        result?.size() == 1
+        result.first().code == a.code
+    }
+
+    def 'Given A, B with labels starting with "Label", when finding max 1 labels containing text "Label", then A is returned'() {
+        def a = persistTerm 'Label A', 123
+        def b = persistTerm 'Label B', 456
+        def c = persistTerm 'Label C', 789
+
+        when:
+        def result = repository.findAllByLabel(byLabelQuery('Label', freeText, [], 1))
+
+        then:
+        result?.size() == 1
+        result.first().code == a.code
+    }
+
+    def 'Given A, B with labels starting with "Label" and A is non-preferred, when finding max 1 labels starting with "Label", then B is returned'() {
+        def a = persistTerm 'Label A', 123, 'EN', nonPreferredStatus
+        def b = persistTerm 'Label B', 456
+        def c = persistTerm 'Label C', 789
+
+        when:
+        def result = repository.findAllByLabel(byLabelQuery('Label', startsWith, [], 1))
+
+        then:
+        result?.size() == 1
+        result.first().code == b.code
+    }
+
+    def 'Given term A in FR and B in EN, both with label "Label", when finding by exact label in FR, only A'() {
+        def a = persistTerm 'label', 123, 'FR'
+        def b = persistTerm 'Label', 456, 'EN'
+
+        when:
+        def result = repository.findAllByLabel(byLabelQuery('Label', exact, [], max, 'FR'))
+
+        then:
+        result?.size() == 1
+        result.first().code == a.code
+    }
+
+    def 'Given A in EN and not in FR, when finding by code in FR, then description of A in EN is returned'() {
+        def a = persistTerm 'label', 123, 'EN'
+
+        when:
+        def result = repository.findAllByCode(byCodeQuery([a.code], 'FR'))
+
+        then:
+        result?.size() == 1
+        result.first().language == 'EN'
+    }
+
+    def 'Given A in AR and not in FR, when finding by code in FR, then description of A in AR is returned'() {
+        def a = persistTerm 'label', 123, 'AR'
+
+        when:
+        def result = repository.findAllByCode(byCodeQuery([a.code], 'FR'))
+
+        then:
+        result?.size() == 1
+        result.first().language == 'AR'
+    }
+
+    def 'Given A in ES and AR, when finding by code in FR, then description of A in ES is returned'() {
+        def a = persistTerm 'label in AR', 123, 'AR'
+        a.descriptionByLanguage['ES'] = new TermDescription(123, PREFERRED_STATUS, 'label in ES', 'ES')
+        persister.persistTerm(a)
+
+        when:
+        def result = repository.findAllByCode(byCodeQuery([a.code], 'FR'))
+
+        then:
+        result?.size() == 1
+        result.first().language == 'ES'
+        result.first().label == 'label in ES'
+    }
+
+    def 'Given A synonym with B, when finding synonyms for A, description of B is returned'() {
+        def a = persistTerm 'A', 123
+        def b = persistTerm 'B', 456
+        persistLink(a, b, synonym)
+
+        when:
+        def result = repository.findRelatedTerms(relationshipQuery(a.code, [synonym]))
+
+        then:
+        result?.size() == 1
+        result.find { it.label == 'B' }
+    }
+
+    def 'Given A synonym with B, when finding broader terms for A, description of B is not returned'() {
+        def a = persistTerm 'A', 123
+        def b = persistTerm 'B', 456
+        persistLink(a, b, synonym)
+
+        when:
+        def result = repository.findRelatedTerms(relationshipQuery(a.code, [broader]))
+
+        then:
+        result?.size() == 0
+    }
+
+    def 'Given A synonym with B, and B only exists in FR, when finding synonyms for A in EN, description of B is not returned'() {
+        def a = persistTerm 'A', 123
+        def b = persistTerm 'B', 456, 'FR'
+        persistLink(a, b, synonym)
+
+        when:
+        def result = repository.findRelatedTerms(relationshipQuery(a.code, [synonym]))
+
+        then:
+        result?.size() == 0
+    }
+
+    def 'Given A synonym with B and B synonym with C, when finding synonyms for A, description of B and C is returned'() {
+        def a = persistTerm 'A', 123
+        def b = persistTerm 'B', 456
+        def c = persistTerm 'C', 789
+        persistLink(a, b, synonym)
+        persistLink(b, c, synonym)
+
+        when:
+        def result = repository.findRelatedTerms(relationshipQuery(a.code, [synonym]))
+
+        then:
+        result?.size() == 2
+        result.find { it.label == 'B' }
+        result.find { it.label == 'C' }
+    }
+
+    def 'Given A synonym with B and B synonym with C, when finding max one synonym for A, description of B is returned'() {
+        def a = persistTerm 'A', 123
+        def b = persistTerm 'B', 456
+        def c = persistTerm 'C', 789
+        persistLink(a, b, synonym)
+        persistLink(b, c, synonym)
+
+        when:
+        def result = repository.findRelatedTerms(relationshipQuery(a.code, [synonym], 1))
+
+        then:
+        result?.size() == 1
+        result.find { it.label == 'B' }
+    }
+
+    def 'Given A synonym with B and B is broader then C, when finding synonyms for A, description of B is returned'() {
+        def a = persistTerm 'A', 123
+        def b = persistTerm 'B', 456
+        def c = persistTerm 'C', 789
+        persistLink(a, b, synonym)
+        persistLink(b, c, broader)
+
+        when:
+        def result = repository.findRelatedTerms(relationshipQuery(a.code, [synonym]))
+
+        then:
+        result?.size() == 1
+        result.find { it.label == 'B' }
+    }
+
+    def 'Given A synonym with B and B is broader then C, when finding synonyms and broaders terms for A, description of B and C is returned'() {
+        def a = persistTerm 'A', 123
+        def b = persistTerm 'B', 456
+        def c = persistTerm 'C', 789
+        persistLink(a, b, synonym)
+        persistLink(b, c, broader)
+
+        when:
+        def result = repository.findRelatedTerms(relationshipQuery(a.code, [synonym, broader]))
+
+        then:
+        result?.size() == 2
+        result.find { it.label == 'B' }
+        result.find { it.label == 'C' }
     }
 
     def 'Updating term generates no new node'() {
-        persister.persistTerm createTerm('Term label')
-        def term = createTerm('Updated label')
+        def term = persistTerm 'Term label'
+        persistTerm 'Updated label', term.code
         persister.persistTerm term
 
         when:
-        def result = repository.findAllWhereWordInLabelStartsWith(query('label', 'EN'))
+        def result = repository.findAllByLabel(byLabelQuery('label', freeText))
 
         then: result.size() == 1
     }
 
-    def 'Given no description in language, when getting by code, English is used'() {
-        def term = createTerm('Term label')
-        persister.persistTerm term
-
-        when:
-        def result = repository.getByCode(term.code, 'FR')
-
-        then: result.language == 'EN'
-    }
-
-
-    def 'Given no description exist in english, when getting by code, NotFoundException is thrown'() {
-        def term = createTerm('Term label', 123, 'FR')
-        persister.persistTerm term
-
-        when: repository.getByCode(term.code, 'EN')
-        then: thrown NotFoundException
-    }
-
-    def 'Given no description in English for end term, when getting links by code, link is excluded'() {
-        def term1 = createTerm('Term 1', 1, 'EN')
-        def term2 = createTerm('Term 2', 2, 'FR')
-        persister.persistTerm(term1)
-        persister.persistTerm(term2)
-        persister.persistLinks(new TermLinks(startTermCode: term1.code).add(term2.code, 20))
-
-        when:
-        def result = repository.findAllBroaderTerms(term1.code, 'EN')
-
-        then:
-        result.empty
-    }
-
-    def 'Given matching term, when finding by label, term is returned'() {
-        String label = 'Term'
-        def term = createTerm(label, 123, 'EN')
-        persister.persistTerm(term)
-
-        when:
-        def result = repository.findByLabel(label, 'EN')
-
-        then: result
-    }
-
-    def 'Given matching term with different case, when finding by label, term is returned'() {
-        def term = createTerm('TeRm', 123, 'EN')
-        persister.persistTerm(term)
-
-        when:
-        def result = repository.findByLabel('tErM', 'EN')
-
-        then: result
-    }
-
-    def 'Given query matching part of term, when finding by label, term is not returned'() {
-        def term = createTerm('Term Almost Matching', 123, 'EN')
-        persister.persistTerm(term)
-
-        when:
-        def result = repository.findByLabel('Term', 'EN')
-
-        then: !result
-    }
-
-    def 'Given matching term, when finding by start, term is returned'() {
-        def term = createTerm('Term Should Match', 123, 'EN')
-        persister.persistTerm(term)
-
-        when:
-        def result = repository.findAllWhereLabelStartsWith(query('Term', 'EN'))
-
-        then: result.size() == 1
-    }
-
-    def 'Given term not starting but containing query, when finding by start, term is not returned'() {
-        def term = createTerm('Should Not Match Term', 123, 'EN')
-        persister.persistTerm(term)
-
-        when:
-        def result = repository.findAllWhereLabelStartsWith(query('Term', 'EN'))
-
-        then: !result
-    }
-
-    private Term createTerm(String label, long code = 123L, String language = 'EN') {
+    private Term persistTerm(String label, long code = 123L, String language = 'EN', int status = PREFERRED_STATUS) {
         def term = new Term(code, '', new Date())
-        term.descriptionByLanguage[language] = new TermDescription(language, 20, label)
+        term.descriptionByLanguage[language] = new TermDescription(code, status, label, language)
+        persister.persistTerm(term)
         return term
     }
 
-    private Term createNonDescriptorTerm(String label, long code = 123L, String language = 'EN') {
-        def term = new Term(code, '', new Date())
-        term.descriptionByLanguage[language] = new TermDescription(language, 60, label)
-        return term
+
+    private void persistLink(Term term1, Term term2, RelationshipType relationshipType) {
+        def linkType = LinkType.values().find { it.relationshipType == relationshipType }
+        persister.persistLinks(new TermLinks(startTermCode: term1.code).add(term2.code, linkType.id))
     }
 
-    private Map<String, Object> toMap(Term term, String language) {
-        def description = term.descriptionByLanguage[language]
-        [code: term.code, scope: term.scope, language: language, label: description.label, status: description.status]
+    private ByCodeQuery byCodeQuery(List<Long> codes, String language = 'EN') {
+        new ByCodeQuery(codes, language)
     }
 
-    private LabelQuery query(String query, String language) {
-        new LabelQuery(query, language, 20)
+    private ByLabelQuery byLabelQuery(String query,
+                                      ByLabelQuery.Match match,
+                                      Collection<RelationshipType> relationshipTypes = [],
+                                      int max = 20,
+                                      String language = 'EN') {
+        new ByLabelQuery(query, max, match.name(), relationshipTypes.collect { it.name() }, language)
+    }
+
+    private RelationshipQuery relationshipQuery(long code,
+                                                Collection<RelationshipType> relationshipTypes = [],
+                                                int max = 20,
+                                                String language = 'EN') {
+        new RelationshipQuery(code, max, relationshipTypes.collect { it.name() }, language)
     }
 }
