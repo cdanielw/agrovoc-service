@@ -60,7 +60,7 @@ class TermResource {
         assertRelationshipTypes(types)
         assertLanguage(language)
 
-        def byLabelQuery = new ByLabelQuery(query, max ?: 20, match, types, language ?: 'EN')
+        def byLabelQuery = new ByLabelQuery(query, max > 0 ? max : 20 , match, types, language ?: 'EN')
         def terms = termProvider.findAllByLabel(byLabelQuery)
         termsToJsonp(terms, byLabelQuery.relationshipTypes, byLabelQuery.language)
     }
@@ -72,9 +72,10 @@ class TermResource {
                          @QueryParam('max') int max,
                          @QueryParam('relationshipType[]') List<String> types,
                          @QueryParam('language') String language) {
+        assertRelationshipTypes(types)
         assertLanguage(language)
 
-        def relationshipQuery = new RelationshipQuery(code, max ?: 20, types, language ?: 'EN')
+        def relationshipQuery = new RelationshipQuery(code, max > 0 ? max : 20 , types, language ?: 'EN')
         def terms = termProvider.findRelationships(relationshipQuery)
         termsToJsonp(terms, [] as Set, relationshipQuery.language)
     }

@@ -1,5 +1,4 @@
 package agrovoc.adapter.persistence
-
 import agrovoc.dto.ByCodeQuery
 import agrovoc.dto.ByLabelQuery
 import agrovoc.dto.RelationshipQuery
@@ -27,9 +26,9 @@ import static agrovoc.adapter.persistence.StatusType.*
 import static agrovoc.dto.ByLabelQuery.Match.*
 import static org.apache.lucene.search.BooleanClause.Occur.MUST
 import static org.apache.lucene.search.BooleanClause.Occur.MUST_NOT
-import static org.neo4j.graphdb.traversal.Evaluation.*
+import static org.neo4j.graphdb.traversal.Evaluation.EXCLUDE_AND_PRUNE
+import static org.neo4j.graphdb.traversal.Evaluation.INCLUDE_AND_CONTINUE
 import static org.neo4j.kernel.Traversal.traversal
-
 /**
  * @author Daniel Wiell
  */
@@ -142,7 +141,13 @@ class Neo4jTermRepository implements TermRepository {
     private boolean shouldIncludeInResult(Node descriptionNode, ByLabelQuery query) {
         if (descriptionNode['status'] == TermDescription.PREFERRED_STATUS) return true
         def termNode = nodeFinder.findTerm(descriptionNode)
-        return termNode.hasRelationship(LinkType.neo4jTypesFor(query.relationshipTypes))
+        def neo4jTypes = LinkType.neo4jTypesFor(query.relationshipTypes)
+        termNode.getRelationships(neo4jTypes).any {
+            def endNode = it.endNode
+            endNode.getRelationships(Direction.INCOMING, NodeFinder.DESCRIBES).any {
+                it.startNode['status'] == TermDescription.PREFERRED_STATUS
+            }
+        }
     }
 
     private void excludeStatusTypesFromQuery(BooleanQuery booleanQuery, StatusType... statusTypes) {

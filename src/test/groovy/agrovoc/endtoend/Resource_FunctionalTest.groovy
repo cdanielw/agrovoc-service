@@ -7,10 +7,7 @@ import groovyx.net.http.RESTClient
 import spock.lang.Shared
 import spock.lang.Specification
 
-import static agrovoc.dto.ByLabelQuery.Match.exact
-import static agrovoc.dto.ByLabelQuery.Match.freeText
-import static agrovoc.dto.ByLabelQuery.Match.startsWith
-
+import static agrovoc.dto.ByLabelQuery.Match.*
 /**
  * @author Daniel Wiell
  */
@@ -45,34 +42,6 @@ class Resource_FunctionalTest extends Specification {
         def document = getJson('term', ['code[]': code])
 
         then: document.results.first().label == expectedLabel
-    }
-
-    def 'When getting term by non-existing code, 404 is returned'() {
-        expect: get('term', ['code[]': 123]).status == 404
-    }
-
-    def 'Given no code[] parameter, when getting term by code, 400 is returned'() {
-        expect: get('term').status == 400
-    }
-
-    def 'Given invalid code[] parameter, when getting term by code, 400 is returned'() {
-        expect: get('term', ['code[]': 'invalid']).status == 400
-    }
-
-    def 'Given invalid ralationshipType[] parameter, when getting term by code, 400 is returned'() {
-        expect: get('term', ['code[]': 123, 'relationshipType[]': 'invalid']).status == 400
-    }
-
-    def 'Given invalid language parameter, when getting term by code, 400 is returned'() {
-        expect: get('term', ['code[]': '213', 'language': 'invalid']).status == 400
-    }
-
-    def 'Given missing q parameter, when getting term by label, 400 is returned'() {
-        expect: get('term').status == 400
-    }
-
-    def 'Given invalid match parameter, when getting term by label, 400 is returned'() {
-        expect: get('term', [match: 'invalid']).status == 400
     }
 
     def 'When finding terms by label, JSON representation is returned'() {
@@ -131,6 +100,34 @@ class Resource_FunctionalTest extends Specification {
         then: json.results.first().code == term.code
     }
 
+    def 'When getting term by non-existing code, 404 is returned'() {
+        expect: get('term', ['code[]': 123]).status == 404
+    }
+
+    def 'Given no code[] parameter, when getting term by code, 400 is returned'() {
+        expect: get('term').status == 400
+    }
+
+    def 'Given invalid code[] parameter, when getting term by code, 400 is returned'() {
+        expect: get('term', ['code[]': 'invalid']).status == 400
+    }
+
+    def 'Given invalid ralationshipType[] parameter, when getting term by code, 400 is returned'() {
+        expect: get('term', ['code[]': 123, 'relationshipType[]': 'invalid']).status == 400
+    }
+
+    def 'Given invalid language parameter, when getting term by code, 400 is returned'() {
+        expect: get('term', ['code[]': '213', 'language': 'invalid']).status == 400
+    }
+
+    def 'Given missing q parameter, when getting term by label, 400 is returned'() {
+        expect: get('term').status == 400
+    }
+
+    def 'Given invalid match parameter, when getting term by label, 400 is returned'() {
+        expect: get('term', [match: 'invalid']).status == 400
+    }
+
     private getJson(String path, Map query = [:]) {
         Object response = get(path, query)
         assert response.status == 200
@@ -141,9 +138,8 @@ class Resource_FunctionalTest extends Specification {
 
     private Object get(String path, Map query = [:]) {
         query.callback = 'jsonpCallback'
-        Object response = client.get(path: path,
+        client.get(path: path,
                 query: query)
-        response
     }
 
     private Term createTerm(long code, Map<String, String> labelByLanguage) {

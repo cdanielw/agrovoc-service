@@ -16,7 +16,7 @@ import static org.neo4j.graphdb.Direction.OUTGOING
  * @author Daniel Wiell
  */
 class NodeFinder {
-    private static final RelationshipType DESCRIBES = DynamicRelationshipType.withName('DESCRIBES')
+    static final RelationshipType DESCRIBES = DynamicRelationshipType.withName('DESCRIBES')
     private static final String ENGLISH = 'EN'
     private static final String FRENCH = 'FR'
     private static final String SPANISH = 'ES'

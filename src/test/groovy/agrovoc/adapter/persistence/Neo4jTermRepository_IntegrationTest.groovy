@@ -190,6 +190,18 @@ class Neo4jTermRepository_IntegrationTest extends Specification {
         result.first().code == a.code
     }
 
+    def 'Given A is non-preferred and synonym to non-preferred B, when finding by label, including synonyms, then A is not returned'() {
+        def a = persistTerm 'A', 123, 'EN', nonPreferredStatus
+        def b = persistTerm 'B', 456, 'EN', nonPreferredStatus
+        persistLink a, b, synonym
+
+        when:
+        def result = repository.findAllByLabel(byLabelQuery('A', exact, [synonym], max))
+
+        then:
+        result?.size() == 0
+    }
+
     def 'Given A, B with labels starting with "Label", when finding max 1 labels starting with "Label", then A is returned'() {
         def a = persistTerm 'Label A', 123
         def b = persistTerm 'Label B', 456
