@@ -11,8 +11,6 @@ import javax.ws.rs.core.Context
 import javax.ws.rs.core.Response
 import javax.ws.rs.core.UriInfo
 
-import static agrovoc.dto.RelationshipType.createRelationshipTypes
-
 /**
  * @author Daniel Wiell
  */
@@ -30,17 +28,15 @@ class TermResource {
     @GET
     @Produces('application/javascript')
     String byCode(@QueryParam('code[]') List<String> codes,
-                  @QueryParam('relationshipType[]') List<String> types,
                   @QueryParam('language') String language) {
         assertParameter('code[] parameter is mandatory') { codes }
         assertParameter('code[] parameter must be number') { allLongs(codes) }
-        assertRelationshipTypes(types)
         assertLanguage(language)
 
         def byCodeQuery = new ByCodeQuery(toLongs(codes), language ?: 'EN')
         try {
             def terms = termProvider.findAllByCode(byCodeQuery)
-            termsToJsonp(terms, createRelationshipTypes(types), byCodeQuery.language)
+            termsToJsonp(terms, 0, [] as Set, byCodeQuery.language)
         } catch (NotFoundException e) {
             throw notFoundException(e.message)
         }
@@ -50,8 +46,9 @@ class TermResource {
     @Path("/find")
     @Produces('application/javascript')
     String byLabel(@QueryParam('q') String query,
-                   @QueryParam('max') Integer max,
+                   @QueryParam('hits') int hits,
                    @QueryParam('match') String match,
+                   @QueryParam('suggestions') int suggestions,
                    @QueryParam('relationshipType[]') List<String> types,
                    @QueryParam('language') String language) {
         assertParameter('q parameter is mandatory') { query }
@@ -60,31 +57,34 @@ class TermResource {
         assertRelationshipTypes(types)
         assertLanguage(language)
 
-        def byLabelQuery = new ByLabelQuery(query, max > 0 ? max : 20 , match, types, language ?: 'EN')
+        def byLabelQuery = new ByLabelQuery(query, determineHitsToInclude(hits), match, types, language ?: 'EN')
         def terms = termProvider.findAllByLabel(byLabelQuery)
-        termsToJsonp(terms, byLabelQuery.relationshipTypes, byLabelQuery.language)
+        termsToJsonp(terms, determineSuggestionsToInclude(suggestions), byLabelQuery.relationshipTypes, byLabelQuery.language)
     }
 
     @GET
     @Path("/{code}/relationships")
     @Produces('application/javascript')
     String relationships(@PathParam('code') long code,
-                         @QueryParam('max') int max,
+                         @QueryParam('suggestions') int suggestions,
                          @QueryParam('relationshipType[]') List<String> types,
                          @QueryParam('language') String language) {
         assertRelationshipTypes(types)
         assertLanguage(language)
-
-        def relationshipQuery = new RelationshipQuery(code, max > 0 ? max : 20 , types, language ?: 'EN')
+        def suggestionsToInclude = determineSuggestionsToInclude(suggestions)
+        def relationshipQuery = new RelationshipQuery(code, suggestionsToInclude, types, language ?: 'EN')
         def terms = termProvider.findRelationships(relationshipQuery)
-        termsToJsonp(terms, [] as Set, relationshipQuery.language)
+        termsToJsonp(terms, 0, [] as Set, relationshipQuery.language)
     }
 
     private String toJsonp(json) {
         "${callback}($json)"
     }
 
-    private String termsToJsonp(List<TermDescription> terms, Set<RelationshipType> relationshipTypes, String language) {
+    private String termsToJsonp(List<TermDescription> terms,
+                                int suggestions,
+                                Set<RelationshipType> relationshipTypes,
+                                String language) {
         def json = [results:
                 terms.collect { term ->
                     def termMap = [
@@ -93,16 +93,19 @@ class TermResource {
                             preferred: term.preferred,
                             language: language
                     ]
-                    if (relationshipTypes)
-                        termMap.relationships = getRelationshipLink(term, relationshipTypes, language)
+                    if (suggestions && relationshipTypes)
+                        termMap.relationships = getRelationshipLink(term, suggestions, relationshipTypes, language)
                     return termMap
                 }]
         return toJsonp(new JsonBuilder(json).toString())
     }
 
-    private String getRelationshipLink(TermDescription term, Set<RelationshipType> types, String language) {
+    private String getRelationshipLink(TermDescription term,
+                                       int suggestions,
+                                       Set<RelationshipType> types,
+                                       String language) {
         def typesParams = types.collect { "relationshipType[]=${it.name()}" }.join('&')
-        "${ui.baseUri}term/$term.code/relationships?$typesParams&language=$language"
+        "${ui.baseUri}term/$term.code/relationships?suggestions=$suggestions&$typesParams&language=$language"
     }
 
     private String getCallback() {
@@ -149,5 +152,17 @@ class TermResource {
         } catch (NumberFormatException ignore) {
             return false
         }
+    }
+
+    int determineHitsToInclude(int max) {
+        if (max <= 0) return 20
+        if (max > 100) return 100
+        return max
+    }
+
+    int determineSuggestionsToInclude(int max) {
+        if (max < 0) return 0
+        if (max > 100) return 100
+        return max
     }
 }

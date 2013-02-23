@@ -20,7 +20,7 @@
         constructor: Agrovoc,
 
         loadTerms: function () {
-            if (!this.options.codes) return;
+            if (!this.options.codes || this.options.codes.length == 0) return;
             var codes = this.options.codes ? $.parseJSON('[' + this.options.codes + ']') : [];
             var that = this;
             this.jsonpFromRelativeUrl('/term', { code: codes }).done(function (json) {
@@ -230,7 +230,7 @@
                 source: function (query, process) {
                     that.findAll(query, process);
                 },
-                items: that.agrovoc.options.max,
+                items: that.agrovoc.options.hits,
                 matcher: function (label) {
                     return true;
                 },
@@ -275,24 +275,27 @@
         executeFindExactMatch: function (query) {
             return this.agrovoc.jsonpFromRelativeUrl('/term/find', {
                 q: query,
-                max: 1,
+                hits: 1,
                 match: 'exact',
+                suggestions: this.agrovoc.options.suggestions,
                 relationshipType: this.relationshipTypes});
         },
 
         executeFindAllThatStartsWith: function (query) {
             return this.agrovoc.jsonpFromRelativeUrl('/term/find', {
                 q: query,
-                max: this.agrovoc.options.items,
+                hits: this.agrovoc.options.hits,
                 match: 'startsWith',
+                suggestions: this.agrovoc.options.suggestions,
                 relationshipType: this.relationshipTypes });
         },
 
         executeFindAllWhereWordStartsWith: function (query) {
             return this.agrovoc.jsonpFromRelativeUrl('/term/find', {
                 q: query,
-                max: this.agrovoc.options.items,
+                hits: this.agrovoc.options.hits,
                 match: 'freeText',
+                suggestions: this.agrovoc.options.suggestions,
                 relationshipType: this.relationshipTypes});
         },
 
@@ -308,12 +311,10 @@
                 this.agrovoc.addTerm(term);
 
             var that = this;
-            if (term.relationships) {
+            if (term.relationships)
                 this.agrovoc.jsonpFromAbsoluteUrl(term.relationships).done(function (json) {
                     that.suggestTerms(json.results);
                 });
-            }
-
             return '';
         },
 

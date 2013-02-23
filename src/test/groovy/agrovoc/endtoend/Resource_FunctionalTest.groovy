@@ -100,6 +100,8 @@ class Resource_FunctionalTest extends Specification {
         then: json.results.first().code == term.code
     }
 
+    // TODO: Test relationships with 0 as max
+
     def 'When getting term by non-existing code, 404 is returned'() {
         expect: get('term', ['code[]': 123]).status == 404
     }

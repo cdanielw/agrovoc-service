@@ -12,7 +12,8 @@ class RelationshipQuery {
     RelationshipQuery(long code, int max, Collection<String> relationshipTypes, String language) {
         this.code = code
         this.max = max
-        this.relationshipTypes = RelationshipType.createRelationshipTypes(relationshipTypes)
+        this.relationshipTypes = max > 0 ?
+            RelationshipType.createRelationshipTypes(relationshipTypes) : new HashSet()
         this.language = language
     }
 }
