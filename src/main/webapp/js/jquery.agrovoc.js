@@ -142,10 +142,7 @@
         this.$hiddenInputs = this.initHiddenInputs();
         this.inputName = this.initInputName();
         this.termsByLabel = {};
-        this.relationshipTypes = ['synonym', 'broader']; // TODO: Make configurable
-//        this.relationshipTypes = ['synonym', 'narrower'];
-//        this.relationshipTypes = ['synonym', ];
-//        this.relationshipTypes = [];
+        this.relationshipTypes = agrovoc.options.suggest;
         this.createTypeahead($element);
         this.listen();
     };
@@ -229,13 +226,11 @@
 
         createTypeahead: function ($element) {
             var that = this;
-            $element.typeahead($.extend({
+            var typeaheadOptions = {
                 source: function (query, process) {
                     that.findAll(query, process);
                 },
-                highlighter: function (label) {
-                    return that.highlighter(label)
-                },
+                items: that.agrovoc.options.max,
                 matcher: function (label) {
                     return true;
                 },
@@ -244,8 +239,13 @@
                 },
                 updater: function (label) {
                     return that.updater(label);
+                },
+                highlighter: function (label) {
+                    return that.highlighter(label)
                 }
-            }, $.fn.agrovoc.defaults, this.agrovoc.options));
+
+            };
+            $element.typeahead(typeaheadOptions);
         },
 
         findAll: function (query, process) {
@@ -399,9 +399,11 @@
     };
 
     $.fn.agrovoc.defaults = {
-//        url: 'http://foris.fao.org/agrovoc',
-        url: 'http://168.202.48.143:8080/agrovoc',
-        language: 'EN'
+        hits: 8,
+        suggestions: 8,
+        suggest: ['synonym', 'broader'],
+        language: 'EN',
+        url: 'http://168.202.48.143:8080/agrovoc'
     };
 
     $.fn.agrovoc.Constructor = Agrovoc;
