@@ -286,14 +286,16 @@
 <pre class="prettyprint linenums">
 &lt;input id="fullSuggestProgrammaticAPI" type="text"&gt;
 
-$('input#fullSuggestProgrammaticAPI').agrovoc({
-    codes: [36390, 4669],
-    hits: 8,
-    suggestions: 20,
-    suggest: ['synonym', 'broader'],
-    language: 'EN',
-    url: 'http://168.202.48.143:8080/agrovoc'
-});
+&lt;script type="text/javascript"&gt;
+    $('input#fullSuggestProgrammaticAPI').agrovoc({
+        codes: [36390, 4669],
+        hits: 8,
+        suggestions: 20,
+        suggest: ['synonym', 'broader'],
+        language: 'EN',
+        url: 'http://168.202.48.143:8080/agrovoc'
+    });
+&lt;/script&gt;
 </pre>
 
 <h3>Events</h3>
@@ -306,6 +308,10 @@ $('input#fullSuggestProgrammaticAPI').agrovoc({
     </thead>
     <tbody>
     <tr>
+        <td>loaded</td>
+        <td>This events fires immediately when pre-selected terms have loaded.</td>
+    </tr>
+    <tr>
         <td>selected</td>
         <td>This events fires immediately when a term has been selected.</td>
     </tr>
@@ -315,6 +321,32 @@ $('input#fullSuggestProgrammaticAPI').agrovoc({
     </tr>
     </tbody>
 </table>
+
+<p> Here is an example of event usage:</p>
+
+<div class="bs-docs-example">
+    <input id="suggestEventExample"
+           type="text"
+           data-provide="agrovoc"
+           data-codes="36390, 4669">
+</div>
+
+<pre class="prettyprint linenums">
+&lt;input id="suggestEventExample"
+       type="text"
+       data-codes="36390, 4669"&gt;
+
+&lt;script type="text/javascript"&gt;
+    $('input#suggestEventExample')
+            .on('loaded',function (event, terms) {
+                // Handler code goes here
+            }).on('selected',function (event, term) {
+                alert('Selected ' + term.label);
+            }).on('removed', function (event, term) {
+                alert('Removed ' + term.label);
+            });
+&lt;/script&gt;
+</pre>
 
 <h3>DOM structure</h3>
 
@@ -463,6 +495,43 @@ $('input#fullSuggestProgrammaticAPI').agrovoc({
         </tr>
         </tbody>
     </table>
+
+    <h3>Events</h3>
+    <table class="table table-bordered table-striped">
+        <thead>
+        <tr>
+            <th>Event</th>
+            <th>Description</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td>loaded</td>
+            <td>This events fires immediately when terms have loaded.</td>
+        </tr>
+        </tbody>
+    </table>
+
+    <p> Here is an example of event usage:</p>
+
+    <div class="bs-docs-example">
+        <ul id="renderEventExample"
+            data-provide="agrovoc"
+            data-codes="36390, 4669"></ul>
+    </div>
+
+<pre class="prettyprint linenums">
+&lt;ul id="renderEventExample"
+    data-provide="agrovoc"
+    data-codes="36390, 4669"&gt;&lt;/ul&gt;
+
+&lt;script type="text/javascript"&gt;
+    $('ul#renderEventExample')
+            .on('loaded', function (event, terms) {
+                // Handler code goes here
+            });
+&lt;/script&gt;
+</pre>
 
     <h3>DOM structure</h3>
 
@@ -700,6 +769,18 @@ callback({
         language: 'EN',
         url: 'http://168.202.48.143:8080/agrovoc'
     });
+    $('input#suggestEventExample')
+            .on('loaded',function (event, terms) {
+                // Handler code goes here
+            }).on('selected',function (event, term) {
+                alert('Selected ' + term.label);
+            }).on('removed', function (event, term) {
+                alert('Removed ' + term.label);
+            });
+    $('ul#renderEventExample')
+            .on('loaded', function (event, terms) {
+                // Handler code goes here
+            });
 </script>
 </body>
 </html>

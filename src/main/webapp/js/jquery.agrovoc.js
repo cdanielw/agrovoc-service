@@ -2,6 +2,7 @@
 
     var Agrovoc = function (element, options) {
         this.options = $.extend({}, $.fn.agrovoc.defaults, options);
+        this.termsLoadedListeners = [];
         this.termAddedListeners = [];
         this.termRemovedListeners = [];
         this.terms = [];
@@ -24,7 +25,9 @@
             var codes = this.options.codes ? $.parseJSON('[' + this.options.codes + ']') : [];
             var that = this;
             this.jsonpFromRelativeUrl('/term', { code: codes }).done(function (json) {
-                that.addTerms(json.results, that.$selectedTerms)
+                that.addTerms(json.results, that.$selectedTerms);
+                that.notifyListeners(that.terms, that.termsLoadedListeners);
+                that.$element.trigger($.Event('loaded'), [that.terms]);
             });
         },
 
@@ -32,9 +35,6 @@
             this.terms = terms;
             this.renderTerms(terms, $terms);
             var that = this;
-            $.each(terms, function (i, term) {
-                that.notifyListeners(term, that.termAddedListeners);
-            });
         },
 
         addTerm: function (term) {
@@ -68,9 +68,9 @@
             });
         },
 
-        notifyListeners: function (term, listeners) {
-            $.each(listeners, function (i, termListener) {
-                termListener(term);
+        notifyListeners: function (object, listeners) {
+            $.each(listeners, function (i, listener) {
+                listener(object);
             });
         },
 
@@ -165,6 +165,11 @@
 
         listen: function () {
             var that = this;
+            this.agrovoc.termsLoadedListeners.push(function (terms) {
+                $.each(terms, function (term) {
+                    that.termAdded(term)
+                })
+            });
             this.agrovoc.termAddedListeners.push(function (term) {
                 that.termAdded(term)
             });
@@ -177,6 +182,7 @@
                 var term = $(this).data('term');
                 that.agrovoc.removeTerm(term);
                 that.agrovoc.renderTerm(term, that.$suggestedTerms);
+                that.agrovoc.$element.trigger($.Event('removed'), [term]);
             });
             this.$suggestedTerms.on('click', '.agrovoc-term', function (event) {
                 event.preventDefault();
@@ -184,6 +190,7 @@
                 var term = $(this).data('term');
                 that.agrovoc.addTerm(term);
                 that.agrovoc.removeRenderedTerm(term, that.$suggestedTerms);
+                that.agrovoc.$element.trigger($.Event('selected'), [term]);
             });
         },
 
@@ -318,8 +325,10 @@
 
         updater: function (label) {
             var term = this.termsByLabel[label];
-            if (term.preferred)
+            if (term.preferred) {
                 this.agrovoc.addTerm(term);
+                this.agrovoc.$element.trigger($.Event('selected'), [term]);
+            }
 
             var that = this;
             if (term.relationships)
