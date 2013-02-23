@@ -173,12 +173,14 @@
             });
             this.$selectedTerms.on('click', '.agrovoc-term', function (event) {
                 event.preventDefault();
+                that.agrovoc.$element.focus();
                 var term = $(this).data('term');
                 that.agrovoc.removeTerm(term);
                 that.agrovoc.renderTerm(term, that.$suggestedTerms);
             });
             this.$suggestedTerms.on('click', '.agrovoc-term', function (event) {
                 event.preventDefault();
+                that.agrovoc.$element.focus();
                 var term = $(this).data('term');
                 that.agrovoc.addTerm(term);
                 that.agrovoc.removeRenderedTerm(term, that.$suggestedTerms);
