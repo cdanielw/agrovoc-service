@@ -15,12 +15,13 @@ li.agrovoc-term {
     behavior: url(../css/PIE.htc);
 }
 
-ul.agrovoc-terms li.agrovoc-term {
+li.agrovoc-term {
     background-color: #3a87ad;
 }
 
-ul.selected-agrovoc-terms li.agrovoc-term {
-    background-color: #3a87ad;
+li.agrovoc-term span {
+    padding: 0 4px;
+    white-space: nowrap;
 }
 
 ul.selected-agrovoc-terms li.agrovoc-term:hover {
@@ -41,9 +42,4 @@ ul.suggested-agrovoc-terms li.agrovoc-term:hover {
 
 ul.suggested-agrovoc-terms li.agrovoc-term:active {
     background-color: #A9A9A9;
-}
-
-li.agrovoc-term span {
-    padding: 0 4px;
-    white-space: nowrap;
 }

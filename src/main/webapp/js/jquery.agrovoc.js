@@ -393,7 +393,7 @@
         constructor: Displayer,
 
         addElementClasses: function ($element) {
-            $element.addClass('inline').addClass('agrovoc-terms');
+            $element.addClass('inline');
         },
 
         getTermTemplate: function () {
