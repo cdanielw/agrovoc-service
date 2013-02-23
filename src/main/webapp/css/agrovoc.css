@@ -15,12 +15,32 @@ li.agrovoc-term {
     behavior: url(../css/PIE.htc);
 }
 
+ul.agrovoc-terms li.agrovoc-term {
+    background-color: #3a87ad;
+}
+
 ul.selected-agrovoc-terms li.agrovoc-term {
     background-color: #3a87ad;
 }
 
+ul.selected-agrovoc-terms li.agrovoc-term:hover {
+    background-color: #347A9C;
+}
+
+ul.selected-agrovoc-terms li.agrovoc-term:active {
+    background-color: #2E6C8A;
+}
+
 ul.suggested-agrovoc-terms li.agrovoc-term {
     background-color: #d3d3d3;
+}
+
+ul.suggested-agrovoc-terms li.agrovoc-term:hover {
+    background-color: #bebebe;
+}
+
+ul.suggested-agrovoc-terms li.agrovoc-term:active {
+    background-color: #A9A9A9;
 }
 
 li.agrovoc-term span {
