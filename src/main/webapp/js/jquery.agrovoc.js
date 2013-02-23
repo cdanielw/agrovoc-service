@@ -136,6 +136,7 @@
 
     var Selector = function ($element, agrovoc) {
         this.agrovoc = agrovoc;
+        this.initSuggestOption();
         this.disableAutocomplete($element);
         this.$suggestedTerms = this.initSuggestedTerms();
         this.$selectedTerms = this.initSelectedTerms(this.$suggestedTerms);
@@ -149,6 +150,14 @@
 
     Selector.prototype = {
         constructor: Selector,
+
+        initSuggestOption: function () {
+            var options = this.agrovoc.options;
+            if ($.type(options.suggest) !== "string") return;
+            options.suggest = $.map(options.suggest.split(','), function (relationshipType) {
+                return $.trim(relationshipType);
+            });
+        },
 
         disableAutocomplete: function ($element) {
             $element.attr('autocomplete', 'off');
