@@ -40,7 +40,7 @@
         addTerm: function (term) {
             if (this.isTermAlreadyAdded(term)) return;
             this.terms.push(term);
-            this.renderTerm(term, this.$selectedTerms);
+            this.renderTerm(term, this.$selectedTerms, this.termTemplate);
             this.notifyListeners(term, this.termAddedListeners);
         },
 
@@ -88,15 +88,17 @@
             return url + (url.indexOf('?') < 0 ? '?' : '&') + 'callback=?';
         },
 
-        renderTerms: function (terms, $terms) {
+        renderTerms: function (terms, $terms, template) {
+            if (!template)
+                template = this.termTemplate;
             var that = this;
             $.each(terms, function (i, term) {
-                that.renderTerm(term, $terms)
+                that.renderTerm(term, $terms, template)
             })
         },
 
-        renderTerm: function (term, $terms) {
-            var $term = $(this.termTemplate);
+        renderTerm: function (term, $terms, template) {
+            var $term = $(template);
             $term.data('term', term);
             $term.attr('data-code', term.code);
             $term.find('.agrovoc-term-label').text(term.label);
@@ -181,7 +183,7 @@
                 that.agrovoc.$element.focus();
                 var term = $(this).data('term');
                 that.agrovoc.removeTerm(term);
-                that.agrovoc.renderTerm(term, that.$suggestedTerms);
+                that.agrovoc.renderTerm(term, that.$suggestedTerms, that.agrovoc.termTemplate);
                 that.agrovoc.$element.trigger($.Event('removed'), [term]);
             });
             this.$suggestedTerms.on('click', '.agrovoc-term', function (event) {
@@ -195,11 +197,19 @@
         },
 
         getTermTemplate: function () {
-            var template = this.agrovoc.options.termTemplate;
+            return '' +
+                '<li class="agrovoc-term" data-code="">' +
+                '  <i class="icon-minus-sign icon-white"></i>' +
+                '  <span class="agrovoc-term-label"></span>' +
+                '</li>';
+        },
+
+        getSuggestedTermTemplate: function () {
+            var template = this.agrovoc.options.suggestedTermTemplate;
             if (!template)
                 return '' +
                     '<li class="agrovoc-term" data-code="">' +
-                    '  <i class="icon-minus-sign icon-white"></i>' +
+                    '  <i class="icon-plus-sign icon-white"></i>' +
                     '  <span class="agrovoc-term-label"></span>' +
                     '</li>';
             return template;
@@ -343,7 +353,7 @@
             var termsToSuggest = $.grep(terms, function (term) {
                 return !that.agrovoc.isTermAlreadyAdded(term)
             });
-            this.agrovoc.renderTerms(termsToSuggest, this.$suggestedTerms);
+            this.agrovoc.renderTerms(termsToSuggest, this.$suggestedTerms, this.getSuggestedTermTemplate());
         },
 
         termAdded: function (term) {
@@ -387,13 +397,10 @@
         },
 
         getTermTemplate: function () {
-            var template = this.agrovoc.options.termTemplate;
-            if (!template)
-                return '' +
-                    '<li class="agrovoc-term" data-code="">' +
-                    '  <span class="agrovoc-term-label"></span>' +
-                    '</li>';
-            return template;
+            return '' +
+                '<li class="agrovoc-term" data-code="">' +
+                '  <span class="agrovoc-term-label"></span>' +
+                '</li>';
         },
 
         initSelectedTerms: function () {
