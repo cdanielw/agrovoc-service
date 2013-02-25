@@ -25,21 +25,21 @@ li.agrovoc-term span {
 }
 
 ul.selected-agrovoc-terms li.agrovoc-term:hover {
-    background-color: #347A9C;
+    background-color: #347a9c;
 }
 
 ul.selected-agrovoc-terms li.agrovoc-term:active {
-    background-color: #2E6C8A;
+    background-color: #2e6c8a;
 }
 
 ul.suggested-agrovoc-terms li.agrovoc-term {
-    background-color: #d3d3d3;
-}
-
-ul.suggested-agrovoc-terms li.agrovoc-term:hover {
     background-color: #bebebe;
 }
 
+ul.suggested-agrovoc-terms li.agrovoc-term:hover {
+    background-color: #a9a9a9;
+}
+
 ul.suggested-agrovoc-terms li.agrovoc-term:active {
-    background-color: #A9A9A9;
+    background-color: #989898;
 }
