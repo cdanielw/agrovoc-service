@@ -116,6 +116,7 @@ class TermResource {
         if (!assertion())
             throw new WebApplicationException(
                     Response.status(HttpURLConnection.HTTP_BAD_REQUEST)
+                            .type('text/plain')
                             .entity(message)
                             .build()
             )
@@ -137,6 +138,7 @@ class TermResource {
         new WebApplicationException(
                 Response.status(HttpURLConnection.HTTP_NOT_FOUND)
                         .entity(message)
+                        .type('text/plain')
                         .build()
         )
     }
