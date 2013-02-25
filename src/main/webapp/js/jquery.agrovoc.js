@@ -69,8 +69,8 @@
         },
 
         notifyListeners: function (object, listeners) {
-            $.each(listeners, function (i, listener) {
-                listener(object);
+            $.each(listeners, function () {
+                this(object);
             });
         },
 
@@ -92,8 +92,8 @@
             if (!template)
                 template = this.termTemplate;
             var that = this;
-            $.each(terms, function (i, term) {
-                that.renderTerm(term, $terms, template)
+            $.each(terms, function () {
+                that.renderTerm(this, $terms, template)
             })
         },
 
@@ -114,8 +114,8 @@
 
         findTermListItemToInsertBefore: function (term, $parentElement) {
             var $itemToInsertBefore = null;
-            $parentElement.children().each(function (i, item) {
-                var $item = $(item);
+            $parentElement.children().each(function () {
+                var $item = $(this);
                 var label = $item.find('span').text();
                 if (label.toLowerCase() > term.label.toLowerCase()) {
                     $itemToInsertBefore = $item;
@@ -168,8 +168,8 @@
         listen: function () {
             var that = this;
             this.agrovoc.termsLoadedListeners.push(function (terms) {
-                $.each(terms, function (term) {
-                    that.termAdded(term)
+                $.each(terms, function () {
+                    that.termAdded(this)
                 })
             });
             this.agrovoc.termAddedListeners.push(function (term) {
@@ -374,9 +374,9 @@
 
         unique: function (array) {
             var unique = [];
-            $.each(array, function (i, item) {
-                if ($.inArray(item, unique) === -1)
-                    unique.push(item);
+            $.each(array, function () {
+                if ($.inArray(this, unique) === -1)
+                    unique.push(this);
             });
             return unique
         }
