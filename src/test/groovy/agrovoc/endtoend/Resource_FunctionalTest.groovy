@@ -114,10 +114,6 @@ class Resource_FunctionalTest extends Specification {
         expect: get('term', ['code[]': 'invalid']).status == 400
     }
 
-    def 'Given invalid ralationshipType[] parameter, when getting term by code, 400 is returned'() {
-        expect: get('term', ['code[]': 123, 'relationshipType[]': 'invalid']).status == 400
-    }
-
     def 'Given invalid language parameter, when getting term by code, 400 is returned'() {
         expect: get('term', ['code[]': '213', 'language': 'invalid']).status == 400
     }

@@ -431,7 +431,7 @@
         suggestions: 8,
         suggest: ['synonym', 'broader'],
         language: 'EN',
-        url: 'http://168.202.48.143:8080/agrovoc'
+        url: 'http://foris.fao.org/agrovoc'
     };
 
     $.fn.agrovoc.Constructor = Agrovoc;
