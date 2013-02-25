@@ -33,13 +33,11 @@ class TermService implements AgrovocTermPollingJob, TermEventPublisher, TermProv
     }
 
     void pollForChanges() {
-        def time = System.currentTimeMillis()
         def previousLastChange = termPersister.lastChanged
         def lastChanged = persistTermsChangedSince(previousLastChange)
         persistLinksChangedSince(previousLastChange)
         if (lastChanged && previousLastChange != lastChanged)
             termPersister.lastChanged = lastChanged
-        println "******** Polling for changes since $previousLastChange took ${(System.currentTimeMillis() - time) / 1000 / 60} minutes"
     }
 
     private Date persistTermsChangedSince(Date previousLastChange) {
