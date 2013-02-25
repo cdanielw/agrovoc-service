@@ -14,6 +14,6 @@ class RelationshipQuery {
         this.max = max
         this.relationshipTypes = max > 0 ?
             RelationshipType.createRelationshipTypes(relationshipTypes) : new HashSet()
-        this.language = language
+        this.language = language.toUpperCase()
     }
 }

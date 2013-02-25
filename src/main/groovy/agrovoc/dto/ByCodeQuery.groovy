@@ -9,6 +9,6 @@ class ByCodeQuery {
 
     ByCodeQuery(List<Long> codes, String language) {
         this.codes = codes
-        this.language = language
+        this.language = language.toUpperCase()
     }
 }
