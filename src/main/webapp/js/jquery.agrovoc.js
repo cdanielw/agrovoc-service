@@ -380,7 +380,6 @@
             });
             return unique
         }
-
     };
 
     var Displayer = function ($element, agrovoc) {
