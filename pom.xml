@@ -2,7 +2,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.fao.foris.agrovoc</groupId>
     <artifactId>agrovoc-service</artifactId>
-    <version>1.0.4-SNAPSHOT</version>
+    <version>1.0.4</version>
     <name>Foris Agrovoc Service</name>
     <packaging>war</packaging>
     <parent>
@@ -162,6 +162,6 @@
 
     <scm>
         <connection>scm:git:ssh://git@ldvfo01.fao.org/agrovoc-service.git</connection>
-        <tag>HEAD</tag>
+        <tag>agrovoc-service-1.0.4</tag>
     </scm>
 </project>
