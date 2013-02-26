@@ -374,9 +374,9 @@
 
         unique: function (array) {
             var unique = [];
-            $.each(array, function () {
-                if ($.inArray(this, unique) === -1)
-                    unique.push(this);
+            $.each(array, function (i, item) {
+                if ($.inArray(item, unique) === -1)
+                    unique.push(item);
             });
             return unique
         }
