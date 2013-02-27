@@ -229,10 +229,10 @@
     <tr>
         <td>suggest</td>
         <td>string</td>
-        <td>synonym, broader</td>
+        <td>alternative, broader</td>
         <td>Defines the relation types to include when providing suggestions.
             Valid values are comma separated list of
-            <code>synonym</code>, <code>broader</code> and <code>narrower</code>.
+            <code>alternative</code>, <code>broader</code> and <code>narrower</code>.
             When no relation types are specified, no suggestions are provided.
         </td>
     </tr>
@@ -261,7 +261,7 @@
            data-codes=""
            data-hits="8"
            data-suggestions="20"
-           data-suggest="synonym, broader"
+           data-suggest="alternative, broader"
            data-language="EN"
            data-url="http://foris.fao.org/agrovoc">
 </div>
@@ -272,7 +272,7 @@
        data-codes=""
        data-hits="8"
        data-suggestions="20"
-       data-suggest="synonym, broader"
+       data-suggest="alternative, broader"
        data-language="EN"
        data-url="http://foris.fao.org/agrovoc"&gt;
 </pre>
@@ -291,7 +291,7 @@
         codes: [36390, 4669],
         hits: 8,
         suggestions: 20,
-        suggest: ['synonym', 'broader'],
+        suggest: ['alternative', 'broader'],
         language: 'EN',
         url: 'http://foris.fao.org/agrovoc'
     });
@@ -560,7 +560,7 @@
 <pre class="prettyprint linenums">
 &lt;ul data-provide="agrovoc"
     data-codes="{agrovoc term codes}"
-    class="inline selected-agrovoc-terms"&gt;
+    class="inline"&gt;
     &lt;li class="agrovoc-term"
         data-code="4669"&gt;
         &lt;span class="agrovoc-term-label"&gt;
@@ -730,7 +730,7 @@
                 result. Non-preferred terms not containing any relationships of the specified types will be excluded
                 from the results. If no relationshipTypes are specified, no non-preferred terms are included and
                 no relationship links are rendered in the representation.
-                Valid values are <code>synonym</code>, <code>broader</code>, and <code>narrower</code>.
+                Valid values are <code>alternative</code>, <code>broader</code>, and <code>narrower</code>.
             </td>
         </tr>
         <tr>
@@ -782,7 +782,7 @@ callback({
         codes: [36390, 4669],
         hits: 8,
         suggestions: 20,
-        suggest: ['synonym', 'broader'],
+        suggest: ['alternative', 'broader'],
         language: 'EN',
         url: 'http://foris.fao.org/agrovoc'
     });

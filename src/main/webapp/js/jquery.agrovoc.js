@@ -428,7 +428,7 @@
     $.fn.agrovoc.defaults = {
         hits: 8,
         suggestions: 20,
-        suggest: ['synonym', 'broader'],
+        suggest: ['alternative', 'broader'],
         language: 'EN',
         url: 'http://foris.fao.org/agrovoc'
     };

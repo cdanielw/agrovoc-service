@@ -14,8 +14,8 @@ enum LinkType {
     HAS_SUBCLASS(101, narrower), INCLUDES(716, narrower), INCLUDED_IN(717, broader),
     HAS_NARROWER_SYNONYM(531, narrower),
 
-    HAS_SYNONYM(530, synonym), HAS_NEAR_SYNONYM(568, synonym), IS_ACRONYM_OF(511, synonym), HAS_ACRONYM(510, synonym),
-    IS_ABBREVIATION_OF(570, synonym), HAS_ABBREVIATION(571, synonym), HAS_LOCAL_NAME(533, synonym)
+    HAS_SYNONYM(530, alternative), HAS_NEAR_SYNONYM(568, alternative), IS_ACRONYM_OF(511, alternative), HAS_ACRONYM(510, alternative),
+    IS_ABBREVIATION_OF(570, alternative), HAS_ABBREVIATION(571, alternative), HAS_LOCAL_NAME(533, alternative)
 
     final int id
     final agrovoc.dto.RelationshipType relationshipType

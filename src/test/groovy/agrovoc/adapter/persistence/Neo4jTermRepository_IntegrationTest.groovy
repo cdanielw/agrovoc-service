@@ -7,7 +7,7 @@ import spock.lang.Specification
 
 import static agrovoc.dto.ByLabelQuery.Match.*
 import static agrovoc.dto.RelationshipType.broader
-import static agrovoc.dto.RelationshipType.synonym
+import static agrovoc.dto.RelationshipType.alternative
 import static agrovoc.dto.TermDescription.getPREFERRED_STATUS
 
 /**
@@ -177,26 +177,26 @@ class Neo4jTermRepository_IntegrationTest extends Specification {
         result?.size() == 0
     }
 
-    def 'Given A is non-preferred and synonym to B, when finding by label, including synonyms, then A is returned'() {
+    def 'Given A is non-preferred and alternative to B, when finding by label, including alternatives, then A is returned'() {
         def a = persistTerm 'A', 123, 'EN', nonPreferredStatus
         def b = persistTerm 'B', 456
-        persistLink a, b, synonym
+        persistLink a, b, alternative
 
         when:
-        def result = repository.findAllByLabel(byLabelQuery('A', exact, [synonym], max))
+        def result = repository.findAllByLabel(byLabelQuery('A', exact, [alternative], max))
 
         then:
         result?.size() == 1
         result.first().code == a.code
     }
 
-    def 'Given A is non-preferred and synonym to non-preferred B, when finding by label, including synonyms, then A is not returned'() {
+    def 'Given A is non-preferred and alternative to non-preferred B, when finding by label, including alternatives, then A is not returned'() {
         def a = persistTerm 'A', 123, 'EN', nonPreferredStatus
         def b = persistTerm 'B', 456, 'EN', nonPreferredStatus
-        persistLink a, b, synonym
+        persistLink a, b, alternative
 
         when:
-        def result = repository.findAllByLabel(byLabelQuery('A', exact, [synonym], max))
+        def result = repository.findAllByLabel(byLabelQuery('A', exact, [alternative], max))
 
         then:
         result?.size() == 0
@@ -289,23 +289,23 @@ class Neo4jTermRepository_IntegrationTest extends Specification {
         result.first().label == 'label in ES'
     }
 
-    def 'Given A synonym with B, when finding synonyms for A, description of B is returned'() {
+    def 'Given A alternative with B, when finding alternatives for A, description of B is returned'() {
         def a = persistTerm 'A', 123
         def b = persistTerm 'B', 456
-        persistLink(a, b, synonym)
+        persistLink(a, b, alternative)
 
         when:
-        def result = repository.findRelatedTerms(relationshipQuery(a.code, [synonym]))
+        def result = repository.findRelatedTerms(relationshipQuery(a.code, [alternative]))
 
         then:
         result?.size() == 1
         result.find { it.label == 'B' }
     }
 
-    def 'Given A synonym with B, when finding broader terms for A, description of B is not returned'() {
+    def 'Given A alternative with B, when finding broader terms for A, description of B is not returned'() {
         def a = persistTerm 'A', 123
         def b = persistTerm 'B', 456
-        persistLink(a, b, synonym)
+        persistLink(a, b, alternative)
 
         when:
         def result = repository.findRelatedTerms(relationshipQuery(a.code, [broader]))
@@ -314,27 +314,27 @@ class Neo4jTermRepository_IntegrationTest extends Specification {
         result?.size() == 0
     }
 
-    def 'Given A synonym with B, and B only exists in FR, when finding synonyms for A in EN, description of B is not returned'() {
+    def 'Given A alternative with B, and B only exists in FR, when finding alternatives for A in EN, description of B is not returned'() {
         def a = persistTerm 'A', 123
         def b = persistTerm 'B', 456, 'FR'
-        persistLink(a, b, synonym)
+        persistLink(a, b, alternative)
 
         when:
-        def result = repository.findRelatedTerms(relationshipQuery(a.code, [synonym]))
+        def result = repository.findRelatedTerms(relationshipQuery(a.code, [alternative]))
 
         then:
         result?.size() == 0
     }
 
-    def 'Given A synonym with B and B synonym with C, when finding synonyms for A, description of B and C is returned'() {
+    def 'Given A alternative with B and B alternative with C, when finding alternatives for A, description of B and C is returned'() {
         def a = persistTerm 'A', 123
         def b = persistTerm 'B', 456
         def c = persistTerm 'C', 789
-        persistLink(a, b, synonym)
-        persistLink(b, c, synonym)
+        persistLink(a, b, alternative)
+        persistLink(b, c, alternative)
 
         when:
-        def result = repository.findRelatedTerms(relationshipQuery(a.code, [synonym]))
+        def result = repository.findRelatedTerms(relationshipQuery(a.code, [alternative]))
 
         then:
         result?.size() == 2
@@ -342,45 +342,45 @@ class Neo4jTermRepository_IntegrationTest extends Specification {
         result.find { it.label == 'C' }
     }
 
-    def 'Given A synonym with B and B synonym with C, when finding max one synonym for A, description of B is returned'() {
+    def 'Given A alternative with B and B alternative with C, when finding max one alternative for A, description of B is returned'() {
         def a = persistTerm 'A', 123
         def b = persistTerm 'B', 456
         def c = persistTerm 'C', 789
-        persistLink(a, b, synonym)
-        persistLink(b, c, synonym)
+        persistLink(a, b, alternative)
+        persistLink(b, c, alternative)
 
         when:
-        def result = repository.findRelatedTerms(relationshipQuery(a.code, [synonym], 1))
+        def result = repository.findRelatedTerms(relationshipQuery(a.code, [alternative], 1))
 
         then:
         result?.size() == 1
         result.find { it.label == 'B' }
     }
 
-    def 'Given A synonym with B and B is broader then C, when finding synonyms for A, description of B is returned'() {
+    def 'Given A alternative with B and B is broader then C, when finding alternatives for A, description of B is returned'() {
         def a = persistTerm 'A', 123
         def b = persistTerm 'B', 456
         def c = persistTerm 'C', 789
-        persistLink(a, b, synonym)
+        persistLink(a, b, alternative)
         persistLink(b, c, broader)
 
         when:
-        def result = repository.findRelatedTerms(relationshipQuery(a.code, [synonym]))
+        def result = repository.findRelatedTerms(relationshipQuery(a.code, [alternative]))
 
         then:
         result?.size() == 1
         result.find { it.label == 'B' }
     }
 
-    def 'Given A synonym with B and B is broader then C, when finding synonyms and broaders terms for A, description of B and C is returned'() {
+    def 'Given A alternative with B and B is broader then C, when finding alternatives and broaders terms for A, description of B and C is returned'() {
         def a = persistTerm 'A', 123
         def b = persistTerm 'B', 456
         def c = persistTerm 'C', 789
-        persistLink(a, b, synonym)
+        persistLink(a, b, alternative)
         persistLink(b, c, broader)
 
         when:
-        def result = repository.findRelatedTerms(relationshipQuery(a.code, [synonym, broader]))
+        def result = repository.findRelatedTerms(relationshipQuery(a.code, [alternative, broader]))
 
         then:
         result?.size() == 2
