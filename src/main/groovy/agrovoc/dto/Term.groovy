@@ -17,18 +17,27 @@ class Term {
         this.lastChanged = lastChanged
     }
 
-    public java.lang.String toString() {
+    public String toString() {
         "$code: $descriptionByLanguage"
     }
 }
 
 
 class TermLinks {
-    long startTermCode
+    final long startTermCode
     private List<List> ends = []
 
+    TermLinks(long startTermCode) {
+        this.startTermCode = startTermCode
+    }
+
     TermLinks add(long endTermCode, int type) {
-        ends << [endTermCode, type]
+        ends << [endTermCode, type, null]
+        return this
+    }
+
+    TermLinks add(long endTermCode, int type, String uri) {
+        ends << [endTermCode, type, uri]
         return this
     }
 
@@ -39,6 +48,6 @@ class TermLinks {
     }
 
     String toString() {
-        "$startTermCode -> ${ends.collect { "${it[0]} (${it[1]})" }.join(', ')}"
+        "$startTermCode -> ${ends.collect { "${it[0]} (${it[1]}${it[2] ? ": ${it[2]}" : ''})" }.join(', ')}"
     }
 }

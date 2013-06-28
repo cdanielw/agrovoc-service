@@ -409,7 +409,7 @@ class Neo4jTermRepository_IntegrationTest extends Specification {
 
     private void persistLink(Term term1, Term term2, RelationshipType relationshipType) {
         def linkType = LinkType.values().find { it.relationshipType == relationshipType }
-        persister.persistLinks(new TermLinks(startTermCode: term1.code).add(term2.code, linkType.id))
+        persister.persistLinks(new TermLinks(term1.code).add(term2.code, linkType.id))
     }
 
     private ByCodeQuery byCodeQuery(List<Long> codes, String language = 'EN') {

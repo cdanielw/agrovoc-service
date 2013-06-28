@@ -46,8 +46,7 @@ class SystemConfiguration implements Configuration {
 
     private AgrovocTermCron setupAgrovocTermCron() {
         def cron = new AgrovocTermCron(services[AgrovocTermPollingJob])
-        cron.cronExpression = System.getProperty(AGROVOC_CRON_SYSTEM_PROPERTY, '0 0 0 1 * ?')
-//        cron.cronExpression = System.getProperty(AGROVOC_CRON_SYSTEM_PROPERTY, '0 * * * * ?')
+        cron.cronExpression = System.getProperty(AGROVOC_CRON_SYSTEM_PROPERTY, '0 0 0 * * ?')
         cron.start()
         return cron
     }

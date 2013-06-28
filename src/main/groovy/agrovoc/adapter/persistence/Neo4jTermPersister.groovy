@@ -14,7 +14,6 @@ import static org.neo4j.graphdb.Direction.OUTGOING
  */
 class Neo4jTermPersister implements TermPersister {
     private static final RelationshipType DESCRIBES = DynamicRelationshipType.withName('DESCRIBES')
-    public static final String ENGLISH = 'EN'
     private final GraphDatabaseService graphDb
     private final NodeFinder nodeFinder
 

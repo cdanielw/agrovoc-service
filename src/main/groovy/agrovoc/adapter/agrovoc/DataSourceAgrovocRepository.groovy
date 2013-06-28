@@ -54,7 +54,7 @@ class DataSourceAgrovocRepository implements AgrovocRepository {
             def startTermCode = rs.getLong('termcode1')
             if (termLinks?.startTermCode != startTermCode) {
                 if (termLinks) callback.call(termLinks)
-                termLinks = new TermLinks(startTermCode: startTermCode)
+                termLinks = new TermLinks(startTermCode)
             }
             termLinks.add(rs.getLong('termcode2'), rs.getInt('newlinktypeid'))
         }
