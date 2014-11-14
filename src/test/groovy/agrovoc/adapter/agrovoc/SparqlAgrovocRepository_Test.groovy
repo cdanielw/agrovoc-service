@@ -1,10 +1,12 @@
 package agrovoc.adapter.agrovoc
 
+import spock.lang.Ignore
 import spock.lang.Specification
 
 /**
  * @author Daniel Wiell
  */
+@Ignore
 class SparqlAgrovocRepository_Test extends Specification {
 
     def 'Test terms'() {
