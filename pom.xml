@@ -9,12 +9,12 @@
     <parent>
         <groupId>org.fao.foris</groupId>
         <artifactId>foris-parent</artifactId>
-        <version>1.0.15</version>
+        <version>1.0.16</version>
     </parent>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <groovy.version>2.1.1</groovy.version>
+        <groovy.version>2.2.1</groovy.version>
         <jersey.version>1.17</jersey.version>
         <slf4j.version>1.7.2</slf4j.version>
         <jetty.version>9.0.0.RC0</jetty.version>

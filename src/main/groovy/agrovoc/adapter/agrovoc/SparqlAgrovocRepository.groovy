@@ -27,18 +27,18 @@ class SparqlAgrovocRepository implements AgrovocRepository {
         // Perhaps terms have relations to other terms, not being linked from concept
         // Are there terms not being linked to from concept
         agrovoc.query("""
-                SELECT ?code ?labelType ?label (LANG(?label) AS ?language) ?modified
-                {
-                  ?concept      rdf:type            skos:Concept ;
-                                ?labelType          ?description ;
-                                dcterms:modified    ?modified .
-                  ?description  rdf:type            skos-xl:Label ;
-                                skos-xl:literalForm ?label ;
-                                ag:hasCodeAgrovoc   ?code .
-                  #FILTER ( ?modified > "${formattedDate}"^^xsd:dateTime ) .
-                  FILTER ( ?concept = <http://aims.fao.org/aos/agrovoc/c_3055>  || ?concept = <http://aims.fao.org/aos/agrovoc/c_16086> ) .
-                }
-                ORDER BY ?code
+SELECT ?code ?labelType ?label (LANG(?label) AS ?language) ?modified
+{
+  ?concept      rdf:type            skos:Concept ;
+                ?labelType          ?description ;
+                dcterms:modified    ?modified .
+  ?description  rdf:type            skos-xl:Label ;
+                skos-xl:literalForm ?label ;
+                ag:hasCodeAgrovoc   ?code .
+  #FILTER ( ?modified > "${formattedDate}"^^xsd:dateTime ) .
+  FILTER ( ?concept = <http://aims.fao.org/aos/agrovoc/c_3055>  || ?concept = <http://aims.fao.org/aos/agrovoc/c_16086> ) .
+}
+ORDER BY ?code
             """) {
             if (currentCode != it.code) {
                 if (conceptDescriptions) invokeTermCallback(conceptDescriptions, callback)
@@ -79,33 +79,33 @@ class SparqlAgrovocRepository implements AgrovocRepository {
 
         TermLinks termLinks = null
         agrovoc.query("""
-                SELECT DISTINCT ?code1 (STR(?p) AS ?relation) ?code2
-                {
-                  {
-                    ?concept1       rdf:type            skos:Concept ;
-                                    ?p                  ?concept2 ;
-                                    ?l                  ?description1 ;
-                                    dcterms:modified    ?modified .
-                    ?concept2       rdf:type            skos:Concept ;
-                                    skos-xl:prefLabel   ?description2 .
-                    ?description1   ag:hasCodeAgrovoc   ?code1 .
-                    ?description2   ag:hasCodeAgrovoc   ?code2 .
-                    #FILTER ( ?modified > "$formattedDate"^^xsd:dateTime ) .
-                    FILTER ( ?concept1 = <http://aims.fao.org/aos/agrovoc/c_3055> || ?concept1 = <http://aims.fao.org/aos/agrovoc/c_16086> ) .
-                  }
-                  UNION
-                  {
-                    ?concept1       rdf:type            skos:Concept ;
-                                    ?l                  ?description1 ;
-                                    dcterms:modified    ?modified .
-                    ?description1   ?p                  ?description2 ;
-                                    ag:hasCodeAgrovoc   ?code1 .
-                    ?description2   ag:hasCodeAgrovoc   ?code2 .
-                    #FILTER ( ?modified > "$formattedDate"^^xsd:dateTime ) .
-                    FILTER ( ?concept1 = <http://aims.fao.org/aos/agrovoc/c_3055> || ?concept1 = <http://aims.fao.org/aos/agrovoc/c_16086> ) .
-                  }
-                }
-                ORDER BY ?code1
+SELECT DISTINCT ?code1 (STR(?p) AS ?relation) ?code2
+{
+  {
+    ?concept1       rdf:type            skos:Concept ;
+                    ?p                  ?concept2 ;
+                    ?d1                 ?description1 ;
+                    dcterms:modified    ?modified .
+    ?concept2       rdf:type            skos:Concept ;
+                    ?d2                 ?description2 .
+    ?description1   ag:hasCodeAgrovoc   ?code1 .
+    ?description2   ag:hasCodeAgrovoc   ?code2 .
+    #FILTER ( ?modified > "$formattedDate"^^xsd:dateTime ) .
+    FILTER ( ?concept1 = <http://aims.fao.org/aos/agrovoc/c_3055> || ?concept1 = <http://aims.fao.org/aos/agrovoc/c_16086> ) .
+  }
+  UNION
+  {
+    ?concept1       rdf:type            skos:Concept ;
+                    ?d1                  ?description1 ;
+                    dcterms:modified    ?modified .
+    ?description1   ?p                  ?description2 ;
+                    ag:hasCodeAgrovoc   ?code1 .
+    ?description2   ag:hasCodeAgrovoc   ?code2 .
+    #FILTER ( ?modified > "$formattedDate"^^xsd:dateTime ) .
+    FILTER ( ?concept1 = <http://aims.fao.org/aos/agrovoc/c_3055> || ?concept1 = <http://aims.fao.org/aos/agrovoc/c_16086> ) .
+  }
+}
+ORDER BY ?code1
             """) { Map<String, String> r ->
             def startTermCode = agrovoc.value(r.code1) as long
             if (termLinks?.startTermCode != startTermCode) {
