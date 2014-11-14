@@ -1,9 +1,8 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.fao.foris.agrovoc</groupId>
     <artifactId>agrovoc-service</artifactId>
-    <version>1.0.6-SNAPSHOT</version>
+    <version>1.0.6</version>
     <name>Foris Agrovoc Service</name>
     <packaging>war</packaging>
     <parent>
@@ -137,7 +136,7 @@
                 <artifactId>gmaven-plugin</artifactId>
                 <version>1.5</version>
                 <configuration>
-                    <source/>
+                    <source />
                     <providerSelection>2.0</providerSelection>
                 </configuration>
                 <dependencies>
@@ -163,6 +162,6 @@
 
     <scm>
         <connection>scm:git:ssh://git@ldvfo01.fao.org/agrovoc-service.git</connection>
-        <tag>HEAD</tag>
+        <tag>agrovoc-service-1.0.6</tag>
     </scm>
 </project>
