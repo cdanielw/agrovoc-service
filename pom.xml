@@ -16,7 +16,7 @@
         <groovy.version>2.2.1</groovy.version>
         <jersey.version>1.17</jersey.version>
         <slf4j.version>1.7.2</slf4j.version>
-        <jetty.version>9.0.0.RC0</jetty.version>
+        <jetty.version>11.0.0.beta3</jetty.version>
         <neo4j.version>1.8.1</neo4j.version>
     </properties>
 
