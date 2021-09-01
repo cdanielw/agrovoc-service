@@ -17,7 +17,7 @@
         <jersey.version>1.17</jersey.version>
         <slf4j.version>1.7.2</slf4j.version>
         <jetty.version>9.0.0.RC0</jetty.version>
-        <neo4j.version>1.8.1</neo4j.version>
+        <neo4j.version>3.5.0</neo4j.version>
     </properties>
 
     <dependencies>
